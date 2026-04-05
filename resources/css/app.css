@@ -1,11 +1,28 @@
-@import 'tailwindcss';
+@import "tailwindcss";
 
+/* 1. Definisikan Source (Sudah Benar) */
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 @source '../../storage/framework/views/*.php';
 @source '../**/*.blade.php';
 @source '../**/*.js';
 
+/* 2. Gunakan @theme untuk Custom Font */
 @theme {
-    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
-        'Segoe UI Symbol', 'Noto Color Emoji';
+    --font-sans:
+        "Instrument Sans", "Plus Jakarta Sans", ui-sans-serif, system-ui,
+        sans-serif;
+
+    /* Tambahkan warna kustom di sini jika ingin menggunakan nama khusus */
+    --color-luxury-warm: #fdfcfb;
+}
+
+/* 3. Perbaikan Root/Body */
+/* Tips: Hindari @apply langsung di tag 'body' dalam file CSS jika sering error. 
+   Lebih stabil jika dimasukkan ke dalam blok @layer atau langsung di HTML. */
+@layer base {
+    body {
+        background-color: var(--color-luxury-warm);
+        /* Gunakan color HEX langsung atau pastikan slate tersedia */
+        color: #1e293b; /* Ini adalah HEX untuk slate-800 */
+    }
 }
