@@ -69,7 +69,7 @@
             newMessage: '',
             isTyping: false,
             messages: [
-                { role: 'bot', text: 'Halo Samuel! Saya AGA (Asisten Generatif Agrikultur). Saya memantau sensor IoT tanah Anda dan memadukannya dengan data cuaca BMKG. Ada yang ingin didiskusikan hari ini?', time: '10:00 AM' }
+                { role: 'bot', text: 'Halo! Saya AGA (Asisten Generatif Agrikultur). Saya memantau sensor IoT tanah Anda dan memadukannya dengan data cuaca BMKG. Ada yang ingin didiskusikan hari ini?', time: '10:00 AM' }
             ],
 
             scrollToBottom() {
@@ -79,31 +79,63 @@
                 }
             },
 
-            sendChat() {
+            async sendChat() {
                 if (this.newMessage.trim() === '') return;
-                
+
                 // Masukkan pesan pengguna
-                this.messages.push({ 
-                    role: 'user', 
-                    text: this.newMessage, 
-                    time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) 
+                this.messages.push({
+                    role: 'user',
+                    text: this.newMessage,
+                    time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
                 });
+
+                const userMessage = this.newMessage;
                 this.newMessage = '';
                 this.scrollToBottom();
-                
+
                 this.isTyping = true;
                 this.scrollToBottom();
-                
-                // Simulasi delay Backend/LLM 2.5 Detik
-                setTimeout(() => {
+
+                try {
+                    // Kirim ke endpoint API recommend dengan x-www-form-urlencoded
+                    const params = new URLSearchParams();
+                    params.append('prompt', userMessage);
+
+                    const response = await fetch('https://70sj7zdm-8000.asse.devtunnels.ms/recommend', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded'
+                        },
+                        body: params
+                    });
+
+                    if (!response.ok) {
+                        throw new Error('Gagal mendapatkan respons');
+                    }
+
+                    const data = await response.json();
+                    console.log('API Response:', data);
+
                     this.isTyping = false;
-                    this.messages.push({ 
-                        role: 'bot', 
-                        text: 'Berdasarkan sensor IoT, kelembapan tanah lahan Anda memang turun menjadi 42%. Namun, menurut prediksi BMKG, akan turun HUJAN RINGAN sore nanti sekitar pukul 16:00 WIB. Jadi, Bapak TIDAK PERLU menyiram lahan hari ini.', 
-                        time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) 
+
+                    // Tampilkan respons dari API dengan key recommendationn
+                    this.messages.push({
+                        role: 'bot',
+                        text: data.recommendationn || data.recommendation || 'Maaf, saya tidak dapat memproses pertanyaan Anda.',
+                        time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
                     });
                     this.scrollToBottom();
-                }, 2500);
+
+                } catch (error) {
+                    console.error('Error:', error);
+                    this.isTyping = false;
+                    this.messages.push({
+                        role: 'bot',
+                        text: 'Maaf, terjadi kesalahan saat menghubungi server. Silakan coba lagi.',
+                        time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
+                    });
+                    this.scrollToBottom();
+                }
             }
         }));
     });

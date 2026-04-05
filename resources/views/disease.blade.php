@@ -31,8 +31,8 @@
 
             <!-- Jika sudah ada gambar (Preview) -->
             <div x-show="hasImage" style="display: none;" class="flex-1 flex flex-col items-center justify-center">
-                <div class="w-full h-48 rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-700 mb-6 bg-slate-100 dark:bg-slate-800">
-                    <img :src="imagePreview" class="w-full h-full object-contain" alt="Preview">
+                <div class="w-full h-48 rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-700 mb-6 bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
+                    <img :src="imagePreview" class="max-w-full max-h-full object-contain" alt="Preview">
                 </div>
                 
                 <button @click="analyzeImage()" 
@@ -82,21 +82,24 @@
                 <div class="bg-slate-50 dark:bg-slate-800/50 rounded-3xl p-6 border border-slate-100 dark:border-slate-700">
                     <div class="flex items-start gap-4 mb-6">
                         <div class="mt-1">
-                            <span class="bg-red-100 text-red-700 dark:bg-red-500/20 dark:text-red-400 text-xs font-bold px-2.5 py-1 rounded-md uppercase tracking-wider">Hama Terdeteksi</span>
-                            <!-- NANTI: Teks ini diganti variabel BE  {{-- {{ $nama_hama }} --}}-->
-                            <h4 class="text-xl font-bold text-slate-800 dark:text-white mt-2">Wereng Coklat</h4>
-                            <p class="text-sm text-slate-500 dark:text-slate-400 italic">Nilaparvata lugens</p>
+                            <span class="bg-red-100 text-red-700 dark:bg-red-500/20 dark:text-red-400 text-xs font-bold px-2.5 py-1 rounded-md uppercase tracking-wider">Status Analisis</span>
+                            <h4 class="text-xl font-bold text-slate-800 dark:text-white mt-2" x-text="diseaseResult.disease"></h4>
+                            
+                            <p class="text-sm text-slate-500 dark:text-slate-400 italic" x-show="diseaseResult.scientificName" x-text="diseaseResult.scientificName"></p>
+                            
+                            <p class="text-xs text-slate-400 mt-2" x-show="diseaseResult.confidence > 0">
+                                Tingkat keyakinan: <span class="font-bold text-green-600" x-text="(diseaseResult.confidence * 100).toFixed(1) + '%'"></span>
+                            </p>
                         </div>
                     </div>
 
                     <div class="space-y-4">
-                        <div class="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm">
-                            <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Rekomendasi LLM</p>
-                            <!-- NANTI: Teks ini diganti variabel BE  {{-- {{ $rekomendasi }} --}}-->
-                            <p class="text-sm text-slate-700 dark:text-slate-300 leading-relaxed">
-                                Tanaman terserang wereng coklat tingkat sedang. Segera gunakan pestisida berbahan aktif <strong class="text-green-600 dark:text-green-400">Pimetrozin 50%</strong>. <br><br>
-                                <strong>Dosis:</strong> 1.5 gram per liter air. Semprotkan pada pangkal batang padi di sore hari.
-                            </p>
+                        <div class="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm max-h-80 overflow-y-auto">
+                            <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">Penjelasan LLM</p>
+                            <!-- x-html dihapus. Kita menggunakan x-ref untuk diinjeksi lewat JavaScript (Bebas dari CSP Error) -->
+                            <div x-ref="llmExplanation" class="text-sm text-slate-700 dark:text-slate-300 leading-relaxed">
+                                <!-- Konten akan dimuat oleh JS -->
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -113,6 +116,12 @@
             imagePreview: null,
             isAnalyzing: false,
             showResult: false,
+            diseaseResult: {
+                disease: 'Memproses...',
+                scientificName: '',
+                confidence: 0
+            },
+            selectedFile: null,
 
             triggerUpload() {
                 document.getElementById('fileUploader').click();
@@ -124,25 +133,78 @@
                     this.hasImage = true;
                     this.showResult = false;
                     this.imagePreview = URL.createObjectURL(file);
+                    this.selectedFile = file;
                 }
             },
 
-            analyzeImage() {
-                if(!this.hasImage) return;
+            async analyzeImage() {
+                if(!this.hasImage || !this.selectedFile) return;
+
                 this.isAnalyzing = true;
                 this.showResult = false;
-                
-                // Simulasi Backend Processing 3 detik
-                setTimeout(() => {
-                    this.isAnalyzing = false;
+
+                try {
+                    const formData = new FormData();
+                    formData.append('image', this.selectedFile);
+
+                    const response = await fetch('https://70sj7zdm-8000.asse.devtunnels.ms/analyze-image', {
+                        method: 'POST',
+                        body: formData
+                    });
+
+                    if (!response.ok) throw new Error('Analisis gagal dari server');
+
+                    const data = await response.json();
+                    console.log('API Response:', data);
+
+                    // 1. Tangkap teks dari API teman Anda (dari kunci "description")
+                    let rawText = data.description || data.recommendation || data.result || 'Hasil analisis LLM tidak ditemukan.';
+
+                    // 2. Parse Markdown LLM ke HTML agar tampil cantik
+                    let htmlText = String(rawText)
+                        .replace(/\n/g, '<br>') // Ubah enter jadi baris baru
+                        .replace(/\*\*(.*?)\*\*/g, '<strong class="text-slate-900 dark:text-white font-bold">$1</strong>') // Bold text (**)
+                        .replace(/\*(.*?)\*/g, '<em class="italic">$1</em>') // Italic text (*)
+                        .replace(/### (.*?)(<br>|$)/g, '<h3 class="text-lg font-bold text-green-700 dark:text-green-500 mt-4 mb-2">$1</h3>') // Header 3 (###)
+                        .replace(/## (.*?)(<br>|$)/g, '<h2 class="text-xl font-black text-slate-800 dark:text-white mt-5 mb-2">$1</h2>') // Header 2 (##)
+                        .replace(/- /g, '&bull; '); // Bullet points
+
+                    // 3. Masukkan ke state Alpine
+                    this.diseaseResult.disease = data.disease || data.nama_penyakit || 'Analisis Berhasil';
+                    this.diseaseResult.scientificName = data.scientific_name || data.scientificName || '';
+                    this.diseaseResult.confidence = data.confidence || data.accuracy || 0;
+
+                    // 4. INJEKSI HTML MANUAL (Untuk menghindari Error CSP x-html)
+                    if (this.$refs.llmExplanation) {
+                        this.$refs.llmExplanation.innerHTML = htmlText;
+                    }
+
+                    // 5. Tampilkan Box Hasil
                     this.showResult = true;
-                }, 3000); 
+
+                } catch (error) {
+                    console.error('Error:', error);
+                    alert('Terjadi kesalahan: ' + error.message);
+                } finally {
+                    this.isAnalyzing = false;
+                }
             },
 
             resetArea() {
                 this.hasImage = false;
                 this.imagePreview = null;
                 this.showResult = false;
+                this.selectedFile = null;
+                
+                this.diseaseResult.disease = '';
+                this.diseaseResult.scientificName = '';
+                this.diseaseResult.confidence = 0;
+                
+                // Kosongkan div HTML penjelasan
+                if (this.$refs.llmExplanation) {
+                    this.$refs.llmExplanation.innerHTML = '';
+                }
+                
                 document.getElementById('fileUploader').value = '';
             }
         }));
