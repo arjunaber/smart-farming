@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\TanamanController;
 use App\Http\Controllers\DashboardController;
 
 Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
@@ -20,3 +21,9 @@ Route::get('/reports', function () {
 Route::get('/settings', function () {
     return view('settings');
 });
+
+
+Route::get('/growth', [TanamanController::class, 'index'])->name('growth');
+Route::post('/growth', [TanamanController::class, 'store'])->name('tanaman.store');
+Route::put('/tanaman/{id}', [TanamanController::class, 'update'])->name('tanaman.update');
+Route::delete('/tanaman/{id}', [TanamanController::class, 'destroy'])->name('tanaman.destroy');
