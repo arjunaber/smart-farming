@@ -12,108 +12,117 @@ class DashboardController extends Controller
 {
     public function index(Request $request)
     {
-        // Mapping menggunakan Kode Wilayah ADM4 terbaru
         $locations = [
-            '32.75.01.1001' => 'Kota Bekasi (Bekasi Jaya)',
+            // --- KOTA BANDUNG (32.73) ---
             '32.73.12.1001' => 'Kota Bandung (Citarum)',
-            '32.04.13.2001' => 'Kab. Bandung (Bojongsoang)', // Wilayah Kosanmu
-            '31.71.01.1001' => 'Jakarta Pusat (Gambir)',
+            '32.73.05.1001' => 'Kota Bandung (Antapani)',
+            '32.73.20.1001' => 'Kota Bandung (Arcamanik)',
+            '32.73.01.1001' => 'Kota Bandung (Andir)',
+            '32.73.08.1001' => 'Kota Bandung (Astana Anyar)',
+            '32.73.04.1001' => 'Kota Bandung (Babakan Ciparay)',
+            '32.73.22.1001' => 'Kota Bandung (Bandung Kidul)',
+            '32.73.03.1001' => 'Kota Bandung (Bandung Kulon)',
+            '32.73.13.1001' => 'Kota Bandung (Bandung Wetan)',
+            '32.73.11.1001' => 'Kota Bandung (Batununggal)',
+            '32.73.09.1001' => 'Kota Bandung (Bojongloa Kaler)',
+            '32.73.10.1001' => 'Kota Bandung (Bojongloa Kidul)',
+            '32.73.23.1001' => 'Kota Bandung (Buahbatu)',
+            '32.73.15.1001' => 'Kota Bandung (Cibeunying Kaler)',
+            '32.73.14.1001' => 'Kota Bandung (Cibeunying Kidul)',
+            '32.73.25.1001' => 'Kota Bandung (Cibiru)',
+            '32.73.02.1001' => 'Kota Bandung (Cicendo)',
+            '32.73.18.1001' => 'Kota Bandung (Cidadap)',
+            '32.73.29.1001' => 'Kota Bandung (Cinambo)',
+            '32.73.16.1001' => 'Kota Bandung (Coblong)',
+            '32.73.26.1001' => 'Kota Bandung (Gedebage)',
+            '32.73.19.1001' => 'Kota Bandung (Kiaracondong)',
+            '32.73.17.1001' => 'Kota Bandung (Lengkong)',
+            '32.73.30.1001' => 'Kota Bandung (Mandalajati)',
+            '32.73.28.1001' => 'Kota Bandung (Panyileukan)',
+            '32.73.24.1001' => 'Kota Bandung (Rancasari)',
+            '32.73.07.1001' => 'Kota Bandung (Regol)',
+            '32.73.06.1001' => 'Kota Bandung (Sukajadi)',
+            '32.73.21.1001' => 'Kota Bandung (Sukasari)',
+            '32.73.27.1001' => 'Kota Bandung (Ujung Berung)',
+
+            // --- KABUPATEN BANDUNG (32.04) ---
+            '32.04.13.2001' => 'Kab. Bandung (Bojongsoang)',
+            '32.04.14.1001' => 'Kab. Bandung (Dayeuhkolot)',
+            '32.04.12.1001' => 'Kab. Bandung (Baleendah)',
+            '32.04.34.2001' => 'Kab. Bandung (Soreang)',
+            '32.04.16.2001' => 'Kab. Bandung (Banjaran)',
+            '32.04.28.2001' => 'Kab. Bandung (Cileunyi)',
+            '32.04.29.2001' => 'Kab. Bandung (Cimenyan)',
+            '32.04.09.2001' => 'Kab. Bandung (Pangalengan)',
+            '32.04.30.2001' => 'Kab. Bandung (Cilengkrang)',
+            '32.04.27.2001' => 'Kab. Bandung (Rancaekek)',
+            '32.04.32.2001' => 'Kab. Bandung (Majalaya)',
+            '32.04.11.2001' => 'Kab. Bandung (Ciparay)',
+
+            // --- KABUPATEN BANDUNG BARAT (32.17) ---
+            '32.17.03.2001' => 'Kab. Bandung Barat (Lembang)',
+            '32.17.01.2001' => 'Kab. Bandung Barat (Ngamprah)',
+            '32.17.02.2001' => 'Kab. Bandung Barat (Padalarang)',
+            '32.17.13.2001' => 'Kab. Bandung Barat (Parongpong)',
+
+            // --- WILAYAH JABAR LAINNYA ---
+            '32.75.01.1001' => 'Kota Bekasi (Bekasi Jaya)',
+            '32.16.01.2001' => 'Kab. Bekasi (Cikarang Pusat)',
+            '32.71.01.1001' => 'Kota Bogor (Bogor Timur)',
+            '32.01.01.2001' => 'Kab. Bogor (Cibinong)',
+            '32.77.01.1001' => 'Kota Cimahi (Cimahi)',
+            '32.72.01.1001' => 'Kota Sukabumi (Cikole)',
+            '32.05.01.2001' => 'Kab. Garut (Tarogong Kidul)',
+            '32.78.01.1001' => 'Kota Tasikmalaya (Tawang)',
+            '32.74.01.1001' => 'Kota Cirebon (Kejaksan)',
         ];
+
 
         $selectedId = $request->get('location', session('selected_location', '32.04.13.2001'));
         session(['selected_location' => $selectedId]);
 
         try {
-            $cacheKey = "bmkg_weather_v2_{$selectedId}";
-
+            $cacheKey = "bmkg_v2_{$selectedId}";
             $weatherData = Cache::remember($cacheKey, now()->addMinutes(60), function () use ($selectedId, $locations) {
-
-                // LOG 1: Mencatat kapan server benar-benar request ke API BMKG
-                Log::info("Menarik data cuaca BARU dari API BMKG untuk area: " . ($locations[$selectedId] ?? $selectedId));
-
-                $response = Http::withHeaders([
-                    'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) Laravel/Dashboard',
-                    'Accept' => 'application/json',
-                ])
-                    ->timeout(10)
-                    ->withoutVerifying()
-                    ->get("https://api.bmkg.go.id/publik/prakiraan-cuaca", [
-                        'adm4' => $selectedId
-                    ]);
+                $response = Http::timeout(10)->withoutVerifying()
+                    ->get("https://api.bmkg.go.id/publik/prakiraan-cuaca", ['adm4' => $selectedId]);
 
                 if ($response->successful()) {
                     $json = $response->json();
-                    $forecast = null;
+                    $dataCuaca = $json['data'][0]['cuaca'][0][0] ?? null;
 
-                    // Algoritma mencari data cuaca yang waktunya paling dekat dengan waktu saat ini
-                    if (isset($json['data'][0]['cuaca'])) {
-                        $now = now()->timezone('Asia/Jakarta');
-                        $closestDiff = null;
-
-                        foreach ($json['data'][0]['cuaca'] as $hari) {
-                            foreach ($hari as $jam) {
-                                if (isset($jam['local_datetime'])) {
-                                    $time = Carbon::createFromFormat('Y-m-d H:i:s', $jam['local_datetime'], 'Asia/Jakarta');
-                                    $diff = abs($now->diffInMinutes($time));
-
-                                    // Cari selisih waktu terkecil (paling relevan dengan saat ini)
-                                    if ($closestDiff === null || $diff < $closestDiff) {
-                                        $closestDiff = $diff;
-                                        $forecast = $jam;
-                                    }
-                                }
-                            }
-                        }
-                    }
-
-                    // Fallback jika loop di atas gagal (ambil data hari pertama, jam pertama)
-                    if (!$forecast && isset($json['data'][0]['cuaca'][0][0])) {
-                        $forecast = $json['data'][0]['cuaca'][0][0];
-                    }
-
-                    if ($forecast) {
+                    if ($dataCuaca) {
                         return [
-                            'temp'      => $forecast['t'] ?? '27',
-                            'humidity'  => $forecast['hu'] ?? '75',
-                            'condition' => $forecast['weather_desc'] ?? 'Berawan',
-                            'area'      => $locations[$selectedId] ?? 'Tidak Diketahui',
+                            'temp'      => $dataCuaca['t'] ?? '27',
+                            'humidity'  => $dataCuaca['hu'] ?? '75',
+                            'condition' => $dataCuaca['weather_desc'] ?? 'Berawan',
+                            'area'      => $locations[$selectedId] ?? 'Jawa Barat',
                             'is_live'   => true
                         ];
                     }
                 }
-
-                // Lempar error jika gagal agar ditangkap catch blok dan tidak masuk Cache
-                throw new \Exception("BMKG Server Error: " . $response->status());
+                throw new \Exception("Gagal fetch BMKG");
             });
         } catch (\Exception $e) {
-            Log::error("BMKG API v2 Error: " . $e->getMessage());
             $weatherData = [
-                'temp'      => '27',
-                'humidity'  => '75',
+                'temp' => '27',
+                'humidity' => '75',
                 'condition' => 'Data Terbatas',
-                'area'      => ($locations[$selectedId] ?? 'Lokasi') . ' (Offline)',
-                'is_live'   => false
+                'area' => ($locations[$selectedId] ?? 'Lokasi') . ' (Offline)',
+                'is_live' => false
             ];
         }
 
-        // --- TAMBAHAN LOG 2: Mengecek status is_live dari variabel $weatherData ---
-        if (isset($weatherData['is_live']) && $weatherData['is_live'] === true) {
-            Log::info("Memuat Dashboard: Status Cuaca LIVE (Area: {$weatherData['area']}, Suhu: {$weatherData['temp']}°C, Cuaca: {$weatherData['condition']}).");
-        } else {
-            Log::warning("Memuat Dashboard: Status Cuaca OFFLINE/Fallback (Area: {$weatherData['area']}).");
-        }
-        // -------------------------------------------------------------------------
+        // Log untuk tracking Live Data
+        Log::info("Dashboard Access - Area: {$weatherData['area']} | Live: " . ($weatherData['is_live'] ? 'YES' : 'NO'));
 
-        if ($request->ajax() || $request->wantsJson()) {
+        if ($request->ajax()) {
             return response()->json($weatherData);
         }
 
         return view('dashboard', array_merge($weatherData, [
-            'humidity_api'     => $weatherData['humidity'],
-            'cuaca'            => $weatherData['condition'],
-            'locations'        => $locations,
-            'selectedLocation' => $selectedId,
-            'showModal'        => !session()->has('has_seen_modal')
+            'locations' => $locations,
+            'selectedLocation' => $selectedId
         ]));
     }
 

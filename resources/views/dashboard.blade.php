@@ -13,7 +13,7 @@
             <div class="flex gap-2">
                 <button onclick="document.getElementById('locationModal').classList.remove('hidden')"
                     class="text-xs font-bold bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-400 px-3 py-1.5 rounded-full border border-slate-200 dark:border-slate-700 hover:bg-slate-50 transition-all shadow-sm">
-                    📍 Ubah Lokasi: <span id="header-area-btn" class="text-orange-500">{{ $area ?? 'Bekasi' }}</span>
+                    Ubah Lokasi: <span id="header-area-btn" class="text-orange-500">{{ $area ?? 'Bekasi' }}</span>
                 </button>
                 <span
                     class="text-xs font-bold bg-green-100 text-green-700 dark:bg-green-500/20 dark:text-green-400 px-3 py-1.5 rounded-full flex items-center gap-2 shadow-sm border border-green-200 dark:border-green-800">
@@ -158,7 +158,7 @@
             </div>
         </div>
 
-        {{-- BMKG Data Attribution (Kewajiban Penggunaan API) --}}
+        {{-- BMKG Data Attribution --}}
         <div class="flex justify-end mt-2">
             <p class="text-xs text-slate-400 dark:text-slate-500">
                 * Sumber data cuaca: <a href="https://data.bmkg.go.id" target="_blank"
@@ -170,62 +170,68 @@
 
     {{-- Location Modal --}}
     <div id="locationModal"
-        class="{{ $showModal ? '' : 'hidden' }} fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm transition-all">
+        class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
         <div
-            class="bg-white dark:bg-slate-900 w-full max-w-md rounded-[2.5rem] p-8 shadow-2xl border border-slate-100 dark:border-slate-800 relative">
-
-            {{-- Tombol Tutup --}}
-            <button onclick="document.getElementById('locationModal').classList.add('hidden')"
-                class="absolute top-6 right-6 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12">
-                    </path>
-                </svg>
-            </button>
-
-            <div class="text-center mb-6">
-                <div
-                    class="bg-orange-100 dark:bg-orange-500/20 w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                    <svg class="w-8 h-8 text-orange-500 animate-bounce" fill="none" stroke="currentColor"
-                        viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
-                    </svg>
-                </div>
-                <h2 class="text-xl font-black text-slate-800 dark:text-white">Sesuaikan Lokasi Lahan</h2>
-                <p class="text-sm text-slate-500 dark:text-slate-400 mt-2">Data BMKG akan disesuaikan otomatis berdasarkan
-                    wilayah kebun Anda.</p>
+            class="bg-white dark:bg-slate-900 w-full max-w-md rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden">
+            <div class="p-4 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center">
+                <h3 class="font-bold text-slate-800 dark:text-white text-lg">Pilih Wilayah Jawa Barat</h3>
+                <button onclick="document.getElementById('locationModal').classList.add('hidden')"
+                    class="text-slate-400 hover:text-slate-600 text-2xl">✕</button>
             </div>
 
-            <form id="locationForm" class="space-y-4" onsubmit="event.preventDefault(); updateLocation();">
-                <div class="relative">
-                    <select id="selectLocation" name="location" required
-                        class="block w-full appearance-none bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 py-4 px-5 pr-10 rounded-2xl focus:outline-none focus:ring-2 focus:ring-orange-500 transition-all font-bold">
-                        @foreach ($locations as $id => $name)
-                            <option value="{{ $id }}" {{ $selectedLocation == $id ? 'selected' : '' }}>
-                                📍 {{ $name }}
-                            </option>
-                        @endforeach
-                    </select>
-                </div>
+            <div class="p-4 bg-slate-50 dark:bg-slate-800/50">
+                <input type="text" id="locationSearch" placeholder="Cari Kota atau Kabupaten..."
+                    class="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm focus:ring-2 focus:ring-orange-500 outline-none transition-all shadow-sm">
+            </div>
 
-                <button type="submit" id="btnConfirm"
-                    class="w-full bg-orange-500 text-white font-bold py-4 rounded-2xl shadow-lg shadow-orange-500/30 hover:bg-orange-600 transition-all">
-                    Konfirmasi Lokasi
-                </button>
-            </form>
+            <div class="max-h-72 overflow-y-auto p-2 space-y-1" id="locationList">
+                @foreach ($locations as $id => $name)
+                    <button type="button" onclick="updateLocation('{{ $id }}')"
+                        class="location-item w-full flex items-center px-4 py-3 rounded-xl hover:bg-orange-50 dark:hover:bg-orange-500/10 text-sm text-slate-600 dark:text-slate-400 hover:text-orange-600 transition-all text-left group"
+                        data-name="{{ strtolower($name) }}">
+                        <span
+                            class="mr-3 opacity-40 group-hover:opacity-100 group-hover:scale-110 transition-transform"></span>
+                        <span class="font-medium">{{ $name }}</span>
+                    </button>
+                @endforeach
+            </div>
+
+            <div id="modalLoading" class="hidden p-8 text-center">
+                <svg class="animate-spin h-8 w-8 mx-auto text-orange-500" xmlns="http://www.w3.org/2000/svg"
+                    fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
+                        stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                    </path>
+                </svg>
+                <p class="text-xs text-slate-500 mt-3 font-medium">Mengambil data cuaca...</p>
+            </div>
         </div>
     </div>
 
     <script>
-        async function updateLocation() {
-            const locationId = document.getElementById('selectLocation').value;
-            const btn = document.getElementById('btnConfirm');
+        // Fitur Real-time Search
+        document.getElementById('locationSearch').addEventListener('input', function(e) {
+            const searchTerm = e.target.value.toLowerCase();
+            const items = document.querySelectorAll('.location-item');
 
-            // Status Loading
-            btn.disabled = true;
-            btn.innerHTML =
-                `<svg class="animate-spin h-5 w-5 mx-auto text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>`;
+            items.forEach(item => {
+                const name = item.getAttribute('data-name');
+                item.style.display = name.includes(searchTerm) ? 'flex' : 'none';
+            });
+        });
+
+        // Fitur AJAX Update Location
+        async function updateLocation(locationId) {
+            const listContainer = document.getElementById('locationList');
+            const searchContainer = document.getElementById('locationSearch').parentElement;
+            const loadingOverlay = document.getElementById('modalLoading');
+
+            // Toggle Loading UI
+            listContainer.classList.add('hidden');
+            searchContainer.classList.add('hidden');
+            loadingOverlay.classList.remove('hidden');
 
             try {
                 const response = await fetch(`/dashboard?location=${locationId}`, {
@@ -235,18 +241,16 @@
                     }
                 });
 
-                if (!response.ok) {
-                    throw new Error(`Server Error: ${response.status}`);
-                }
+                if (!response.ok) throw new Error(`Server Error: ${response.status}`);
 
                 const data = await response.json();
 
-                // 1. Update Metrics (Angka Utama)
+                // 1. Update Metrics Utama
                 if (data.temp !== undefined) document.getElementById('display-temp').innerText = data.temp;
                 if (data.humidity !== undefined) document.getElementById('display-humidity').innerText = data.humidity;
                 if (data.condition) document.getElementById('display-cuaca').innerText = data.condition;
 
-                // 2. Update Label Area (Header & Tombol)
+                // 2. Update Label Header
                 if (data.area) {
                     document.getElementById('header-area-btn').innerText = data.area;
                     if (document.getElementById('label-area')) {
@@ -254,7 +258,7 @@
                     }
                 }
 
-                // 3. Update Teks di dalam Card Rekomendasi LLM (Agar Sinkron)
+                // 3. Update LLM Recommendation Card
                 if (document.getElementById('card-area')) document.getElementById('card-area').innerText = data.area;
                 if (document.getElementById('card-temp')) document.getElementById('card-temp').innerText = data.temp;
                 if (document.getElementById('card-cuaca')) document.getElementById('card-cuaca').innerText = data
@@ -264,12 +268,21 @@
                 document.getElementById('locationModal').classList.add('hidden');
 
             } catch (error) {
-                console.error("Detail Error:", error);
-                alert("Gagal memperbarui data cuaca. Periksa koneksi atau log server.");
+                console.error("AJAX Detail Error:", error);
+                alert("Gagal memperbarui data cuaca. Silakan coba lagi.");
             } finally {
-                btn.disabled = false;
-                btn.innerText = "Konfirmasi Lokasi";
+                // Reset Modal UI
+                listContainer.classList.remove('hidden');
+                searchContainer.classList.remove('hidden');
+                loadingOverlay.classList.add('hidden');
+                document.getElementById('locationSearch').value = '';
+                document.querySelectorAll('.location-item').forEach(i => i.style.display = 'flex');
             }
         }
+
+        // Close modal on Escape key
+        window.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') document.getElementById('locationModal').classList.add('hidden');
+        });
     </script>
 @endsection
