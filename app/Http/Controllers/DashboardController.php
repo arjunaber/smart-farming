@@ -5,7 +5,9 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Log; // Pastikan ini sudah di-import
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Auth;
+use App\Models\Lahan;
 use Carbon\Carbon;
 
 class DashboardController extends Controller
@@ -13,7 +15,6 @@ class DashboardController extends Controller
     public function index(Request $request)
     {
         $locations = [
-            // --- KOTA BANDUNG (32.73) ---
             '32.73.12.1001' => 'Kota Bandung (Citarum)',
             '32.73.05.1001' => 'Kota Bandung (Antapani)',
             '32.73.20.1001' => 'Kota Bandung (Arcamanik)',
@@ -45,27 +46,24 @@ class DashboardController extends Controller
             '32.73.21.1001' => 'Kota Bandung (Sukasari)',
             '32.73.27.1001' => 'Kota Bandung (Ujung Berung)',
 
-            // --- KABUPATEN BANDUNG (32.04) ---
             '32.04.13.2001' => 'Kab. Bandung (Bojongsoang)',
             '32.04.14.1001' => 'Kab. Bandung (Dayeuhkolot)',
             '32.04.12.1001' => 'Kab. Bandung (Baleendah)',
             '32.04.34.2001' => 'Kab. Bandung (Soreang)',
             '32.04.16.2001' => 'Kab. Bandung (Banjaran)',
             '32.04.28.2001' => 'Kab. Bandung (Cileunyi)',
-            '32.04.29.2001' => 'Kab. Bandung (Cimenyan)',
+            '32.04.29.1001' => 'Kab. Bandung (Cimenyan)',
             '32.04.09.2001' => 'Kab. Bandung (Pangalengan)',
             '32.04.30.2001' => 'Kab. Bandung (Cilengkrang)',
             '32.04.27.2001' => 'Kab. Bandung (Rancaekek)',
             '32.04.32.2001' => 'Kab. Bandung (Majalaya)',
             '32.04.11.2001' => 'Kab. Bandung (Ciparay)',
 
-            // --- KABUPATEN BANDUNG BARAT (32.17) ---
             '32.17.03.2001' => 'Kab. Bandung Barat (Lembang)',
             '32.17.01.2001' => 'Kab. Bandung Barat (Ngamprah)',
             '32.17.02.2001' => 'Kab. Bandung Barat (Padalarang)',
             '32.17.13.2001' => 'Kab. Bandung Barat (Parongpong)',
 
-            // --- WILAYAH JABAR LAINNYA ---
             '32.75.01.1001' => 'Kota Bekasi (Bekasi Jaya)',
             '32.16.01.2001' => 'Kab. Bekasi (Cikarang Pusat)',
             '32.71.01.1001' => 'Kota Bogor (Bogor Timur)',
@@ -76,7 +74,6 @@ class DashboardController extends Controller
             '32.78.01.1001' => 'Kota Tasikmalaya (Tawang)',
             '32.74.01.1001' => 'Kota Cirebon (Kejaksan)',
         ];
-
 
         $selectedId = $request->get('location', session('selected_location', '32.04.13.2001'));
         session(['selected_location' => $selectedId]);
@@ -113,8 +110,24 @@ class DashboardController extends Controller
             ];
         }
 
-        // Log untuk tracking Live Data
         Log::info("Dashboard Access - Area: {$weatherData['area']} | Live: " . ($weatherData['is_live'] ? 'YES' : 'NO'));
+
+        $lahan = null;
+        if (Auth::check()) {
+            $lahan = Auth::user()->lahan()->first();
+            if (!$lahan) {
+                $lahan = (object) [
+                    'nama_lahan' => 'Lahan Default',
+                    'komoditas_utama' => 'Padi IR64',
+                    'fase_saat_ini' => 'Vegetatif (Hari ke-45)',
+                    'kesesuaian_score' => 92,
+                    'lokasi' => $weatherData['area'],
+                ];
+            } else {
+                $lahan->komoditas_utama = $lahan->komoditas_utama ?? $lahan->komoditas[0]['nama'] ?? 'Belum ditentukan';
+                $lahan->fase_saat_ini = $lahan->komoditas[0]['fase'] ?? 'Belum ditentukan';
+            }
+        }
 
         if ($request->ajax()) {
             return response()->json($weatherData);
@@ -122,7 +135,8 @@ class DashboardController extends Controller
 
         return view('dashboard', array_merge($weatherData, [
             'locations' => $locations,
-            'selectedLocation' => $selectedId
+            'selectedLocation' => $selectedId,
+            'lahan' => $lahan,
         ]));
     }
 
@@ -132,3 +146,4 @@ class DashboardController extends Controller
         return response()->json(['status' => 'ok']);
     }
 }
+

@@ -22,7 +22,16 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'role',
     ];
+
+    /**
+     * Lahan yang dimiliki user
+     */
+    public function lahan()
+    {
+        return $this->hasMany(Lahan::class);
+    }
 
     /**
      * The attributes that should be hidden for serialization.
