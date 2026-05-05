@@ -18,14 +18,25 @@ class Lahan extends Model
         'lokasi',
         'komoditas',
         'kesesuaian_score',
-        'deskripsi',
+        'deskripsi'
     ];
 
     protected $casts = [
         'komoditas' => 'array',
-        'luas' => 'decimal:2',
-        'kesesuaian_score' => 'decimal:2',
+        'luas' => 'float',
+        'kesesuaian_score' => 'integer',
     ];
+
+    // Helper untuk mengambil nama komoditas utama tanpa error
+    public function getNamaKomoditasAttribute()
+    {
+        return $this->komoditas[0]['nama'] ?? 'Tanpa Komoditas';
+    }
+
+    public function getFaseTanamanAttribute()
+    {
+        return $this->komoditas[0]['fase'] ?? 'N/A';
+    }
 
     public function user()
     {
@@ -36,10 +47,4 @@ class Lahan extends Model
     {
         return $this->hasMany(LogbookEntry::class);
     }
-
-    public function getKomoditasUtamaAttribute()
-    {
-        return $this->komoditas[0]['nama'] ?? 'Belum ditentukan';
-    }
 }
-
