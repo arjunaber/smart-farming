@@ -10,16 +10,32 @@
         rel="stylesheet">
 
     <style>
-        body { font-family: 'Plus Jakarta Sans', sans-serif; }
-        ::-webkit-scrollbar { width: 5px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
-        .dark ::-webkit-scrollbar-thumb { background: #334155; }
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+
+        ::-webkit-scrollbar {
+            width: 5px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #e2e8f0;
+            border-radius: 10px;
+        }
+
+        .dark ::-webkit-scrollbar-thumb {
+            background: #334155;
+        }
     </style>
 
     {{-- Script Pencegah Flash Putih --}}
     <script>
-        if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+        if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia(
+                '(prefers-color-scheme: dark)').matches)) {
             document.documentElement.classList.add('dark');
         }
     </script>
@@ -27,207 +43,342 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 
-<body class="bg-[#FDFCFB] dark:bg-slate-950 text-slate-800 dark:text-slate-200 font-sans antialiased transition-colors duration-300">
-    
+<body
+    class="bg-[#FDFCFB] dark:bg-slate-950 text-slate-800 dark:text-slate-200 font-sans antialiased transition-colors duration-300">
+
     {{-- Membungkus seluruh aplikasi dengan data Alpine CSP-Compliant --}}
     <div x-data="layout" class="flex h-screen overflow-hidden">
 
         {{-- SIDEBAR --}}
-        <aside class="w-72 bg-white dark:bg-slate-900 border-r border-gray-100 dark:border-slate-800 flex-shrink-0 flex flex-col shadow-[4px_0_24px_rgba(0,0,0,0.02)] z-20 relative">
+        <aside
+            class="w-72 bg-white dark:bg-slate-900 border-r border-gray-100 dark:border-slate-800 flex-shrink-0 flex flex-col shadow-[4px_0_24px_rgba(0,0,0,0.02)] z-20 relative">
             <div class="p-8">
                 <div class="flex items-center gap-3">
-                    <div class="bg-gradient-to-br from-green-600 to-green-700 p-2.5 rounded-xl shadow-lg shadow-green-100 dark:shadow-none">
+                    <div
+                        class="bg-gradient-to-br from-green-600 to-green-700 p-2.5 rounded-xl shadow-lg shadow-green-100 dark:shadow-none">
                         <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 3v19M5 8h14M5 16h14"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                                d="M12 3v19M5 8h14M5 16h14"></path>
                         </svg>
                     </div>
                     <div class="flex flex-col">
-                        <span class="font-black text-2xl tracking-tighter text-slate-800 dark:text-white leading-none">AGA</span>
-                        <span class="text-[10px] font-bold text-green-600 tracking-[0.1em] uppercase">Asisten Generatif Agrikultur</span>
+                        <span
+                            class="font-black text-2xl tracking-tighter text-slate-800 dark:text-white leading-none">AGA</span>
+                        <span class="text-[10px] font-bold text-green-600 tracking-[0.1em] uppercase">Asisten Generatif
+                            Agrikultur</span>
                     </div>
                 </div>
             </div>
 
             <nav class="flex-1 px-6 space-y-1.5 py-4 overflow-y-auto">
-                <p class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] px-4 mb-2">Beranda</p>
-                <a href="/dashboard" class="flex items-center gap-3 px-4 py-3.5 rounded-2xl transition-all font-medium group {{ request()->is('dashboard') || request()->is('/') ? 'bg-green-50 dark:bg-green-500/10 text-green-700 dark:text-green-400 font-bold border-r-4 border-green-600' : 'text-slate-500 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-800/50' }}">
-                    <svg class="w-5 h-5 {{ request()->is('dashboard') || request()->is('/') ? '' : 'group-hover:text-green-600 transition-colors' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>
+                <p
+                    class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] px-4 mb-2">
+                    Beranda</p>
+                <a href="/dashboard"
+                    class="flex items-center gap-3 px-4 py-3.5 rounded-2xl transition-all font-medium group {{ request()->is('dashboard') || request()->is('/') ? 'bg-green-50 dark:bg-green-500/10 text-green-700 dark:text-green-400 font-bold border-r-4 border-green-600' : 'text-slate-500 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-800/50' }}">
+                    <svg class="w-5 h-5 {{ request()->is('dashboard') || request()->is('/') ? '' : 'group-hover:text-green-600 transition-colors' }}"
+                        fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6">
+                        </path>
+                    </svg>
                     Beranda
                 </a>
 
-                <p class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] px-4 mt-6 mb-2">Klasifikasi</p>
-                <a href="/disease" class="flex items-center gap-3 px-4 py-3.5 rounded-2xl transition-all font-medium group {{ request()->is('disease') ? 'bg-green-50 dark:bg-green-500/10 text-green-700 dark:text-green-400 font-bold border-r-4 border-green-600' : 'text-slate-500 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-800/50' }}">
-                    <svg class="w-5 h-5 {{ request()->is('disease') ? '' : 'group-hover:text-green-600 transition-colors' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                <p
+                    class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] px-4 mt-6 mb-2">
+                    Klasifikasi</p>
+                <a href="/disease"
+                    class="flex items-center gap-3 px-4 py-3.5 rounded-2xl transition-all font-medium group {{ request()->is('disease') ? 'bg-green-50 dark:bg-green-500/10 text-green-700 dark:text-green-400 font-bold border-r-4 border-green-600' : 'text-slate-500 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-800/50' }}">
+                    <svg class="w-5 h-5 {{ request()->is('disease') ? '' : 'group-hover:text-green-600 transition-colors' }}"
+                        fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z">
+                        </path>
+                    </svg>
                     Penyakit Tanaman
                 </a>
 
-                <p class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] px-4 mt-6 mb-2">Prediksi</p>
-                <a href="/growth" class="flex items-center gap-3 px-4 py-3.5 rounded-2xl transition-all font-medium group {{ request()->is('growth') ? 'bg-green-50 dark:bg-green-500/10 text-green-700 dark:text-green-400 font-bold border-r-4 border-green-600' : 'text-slate-500 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-800/50' }}">
-                    <svg class="w-5 h-5 {{ request()->is('growth') ? '' : 'group-hover:text-green-600 transition-colors' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg>
+                <p
+                    class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] px-4 mt-6 mb-2">
+                    Prediksi</p>
+                <a href="/growth"
+                    class="flex items-center gap-3 px-4 py-3.5 rounded-2xl transition-all font-medium group {{ request()->is('growth') ? 'bg-green-50 dark:bg-green-500/10 text-green-700 dark:text-green-400 font-bold border-r-4 border-green-600' : 'text-slate-500 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-800/50' }}">
+                    <svg class="w-5 h-5 {{ request()->is('growth') ? '' : 'group-hover:text-green-600 transition-colors' }}"
+                        fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path>
+                    </svg>
                     Pertumbuhan
                 </a>
 
-                <p class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] px-4 mt-6 mb-2">Asisten AI</p>
-                <a href="/chatbot" class="flex items-center gap-3 px-4 py-3.5 rounded-2xl transition-all font-medium group {{ request()->is('chatbot') ? 'bg-green-50 dark:bg-green-500/10 text-green-700 dark:text-green-400 font-bold border-r-4 border-green-600' : 'text-slate-500 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-800/50' }}">
-                    <svg class="w-5 h-5 {{ request()->is('chatbot') ? '' : 'group-hover:text-green-600 transition-colors' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"></path></svg>
+                <p
+                    class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] px-4 mt-6 mb-2">
+                    Asisten AI</p>
+                <a href="/chatbot"
+                    class="flex items-center gap-3 px-4 py-3.5 rounded-2xl transition-all font-medium group {{ request()->is('chatbot') ? 'bg-green-50 dark:bg-green-500/10 text-green-700 dark:text-green-400 font-bold border-r-4 border-green-600' : 'text-slate-500 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-800/50' }}">
+                    <svg class="w-5 h-5 {{ request()->is('chatbot') ? '' : 'group-hover:text-green-600 transition-colors' }}"
+                        fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z">
+                        </path>
+                    </svg>
                     Chatbot Tanya
                 </a>
 
                 {{-- REPORTS & SETTINGS DIKEMBALIKAN --}}
-<p class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] px-4 mt-6 mb-2">Kelola</p>
-                <a href="/lahan" class="flex items-center gap-3 px-4 py-3.5 rounded-2xl transition-all font-medium group {{ request()->is('lahan*') ? 'bg-green-50 dark:bg-green-500/10 text-green-700 dark:text-green-400 font-bold border-r-4 border-green-600' : 'text-slate-500 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-800/50' }}">
-                    <svg class="w-5 h-5 {{ request()->is('lahan*') ? '' : 'group-hover:text-green-600 transition-colors' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2h10a2 2 0 012 2v2M5 11h14"></path></svg>
+                <p
+                    class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] px-4 mt-6 mb-2">
+                    Kelola</p>
+                <a href="/lahan"
+                    class="flex items-center gap-3 px-4 py-3.5 rounded-2xl transition-all font-medium group {{ request()->is('lahan*') ? 'bg-green-50 dark:bg-green-500/10 text-green-700 dark:text-green-400 font-bold border-r-4 border-green-600' : 'text-slate-500 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-800/50' }}">
+                    <svg class="w-5 h-5 {{ request()->is('lahan*') ? '' : 'group-hover:text-green-600 transition-colors' }}"
+                        fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2h10a2 2 0 012 2v2M5 11h14">
+                        </path>
+                    </svg>
                     Lahan
                 </a>
-                <a href="/logbook" class="flex items-center gap-3 px-4 py-3.5 rounded-2xl transition-all font-medium group {{ request()->is('logbook*') ? 'bg-green-50 dark:bg-green-500/10 text-green-700 dark:text-green-400 font-bold border-r-4 border-green-600' : 'text-slate-500 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-800/50' }}">
-                    <svg class="w-5 h-5 {{ request()->is('logbook*') ? '' : 'group-hover:text-green-600 transition-colors' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                <a href="/logbook"
+                    class="flex items-center gap-3 px-4 py-3.5 rounded-2xl transition-all font-medium group {{ request()->is('logbook*') ? 'bg-green-50 dark:bg-green-500/10 text-green-700 dark:text-green-400 font-bold border-r-4 border-green-600' : 'text-slate-500 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-800/50' }}">
+                    <svg class="w-5 h-5 {{ request()->is('logbook*') ? '' : 'group-hover:text-green-600 transition-colors' }}"
+                        fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
                     Logbook
                 </a>
-@if(auth()->check() && Auth::user()->role === 'super_admin')
-                <a href="/admin" class="flex items-center gap-3 px-4 py-3.5 rounded-2xl transition-all font-medium group {{ request()->is('admin*') ? 'bg-purple-50 dark:bg-purple-500/10 text-purple-700 dark:text-purple-400 font-bold border-r-4 border-purple-600' : 'text-slate-500 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-800/50' }}">
-                    <svg class="w-5 h-5 {{ request()->is('admin*') ? '' : 'group-hover:text-purple-600 transition-colors' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
-                    Admin
-                </a>
+                @if (auth()->check() && Auth::user()->role === 'super_admin')
+                    <a href="/admin"
+                        class="flex items-center gap-3 px-4 py-3.5 rounded-2xl transition-all font-medium group {{ request()->is('admin*') ? 'bg-purple-50 dark:bg-purple-500/10 text-purple-700 dark:text-purple-400 font-bold border-r-4 border-purple-600' : 'text-slate-500 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-800/50' }}">
+                        <svg class="w-5 h-5 {{ request()->is('admin*') ? '' : 'group-hover:text-purple-600 transition-colors' }}"
+                            fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z">
+                            </path>
+                        </svg>
+                        Admin
+                    </a>
                 @endif
-                <a href="/reports" class="flex items-center gap-3 px-4 py-3.5 rounded-2xl transition-all font-medium group {{ request()->is('reports') ? 'bg-green-50 dark:bg-green-500/10 text-green-700 dark:text-green-400 font-bold border-r-4 border-green-600' : 'text-slate-500 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-800/50' }}">
-                    <svg class="w-5 h-5 {{ request()->is('reports') ? '' : 'group-hover:text-green-600 transition-colors' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                <a href="/reports"
+                    class="flex items-center gap-3 px-4 py-3.5 rounded-2xl transition-all font-medium group {{ request()->is('reports') ? 'bg-green-50 dark:bg-green-500/10 text-green-700 dark:text-green-400 font-bold border-r-4 border-green-600' : 'text-slate-500 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-800/50' }}">
+                    <svg class="w-5 h-5 {{ request()->is('reports') ? '' : 'group-hover:text-green-600 transition-colors' }}"
+                        fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
+                        </path>
+                    </svg>
                     Laporan
                 </a>
-                <a href="/settings" class="flex items-center gap-3 px-4 py-3.5 rounded-2xl transition-all font-medium group {{ request()->is('settings') ? 'bg-green-50 dark:bg-green-500/10 text-green-700 dark:text-green-400 font-bold border-r-4 border-green-600' : 'text-slate-500 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-800/50' }}">
-                    <svg class="w-5 h-5 {{ request()->is('settings') ? '' : 'group-hover:text-green-600 transition-colors' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                <a href="/settings"
+                    class="flex items-center gap-3 px-4 py-3.5 rounded-2xl transition-all font-medium group {{ request()->is('settings') ? 'bg-green-50 dark:bg-green-500/10 text-green-700 dark:text-green-400 font-bold border-r-4 border-green-600' : 'text-slate-500 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-800/50' }}">
+                    <svg class="w-5 h-5 {{ request()->is('settings') ? '' : 'group-hover:text-green-600 transition-colors' }}"
+                        fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z">
+                        </path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                    </svg>
                     Pengaturan
                 </a>
             </nav>
 
             {{-- PROFILE ADMINISTRATOR INTERAKTIF --}}
             <div class="relative p-6 border-t border-slate-50 dark:border-slate-800">
-                
+
                 <!-- Dropdown Menu Profile -->
-                <div x-show="profileOpen" 
-                     @click.away="closeProfile()"
-                     x-transition:enter="transition ease-out duration-200"
-                     x-transition:enter-start="opacity-0 translate-y-4"
-                     x-transition:enter-end="opacity-100 translate-y-0"
-                     x-transition:leave="transition ease-in duration-150"
-                     x-transition:leave-start="opacity-100 translate-y-0"
-                     x-transition:leave-end="opacity-0 translate-y-4"
-                     class="absolute bottom-full left-6 right-6 mb-3 bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 rounded-2xl shadow-xl overflow-hidden z-50" style="display: none;">
-                    
-                    <div class="px-4 py-3 border-b border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50">
+                <div x-show="profileOpen" @click.away="closeProfile()"
+                    x-transition:enter="transition ease-out duration-200"
+                    x-transition:enter-start="opacity-0 translate-y-4"
+                    x-transition:enter-end="opacity-100 translate-y-0"
+                    x-transition:leave="transition ease-in duration-150"
+                    x-transition:leave-start="opacity-100 translate-y-0"
+                    x-transition:leave-end="opacity-0 translate-y-4"
+                    class="absolute bottom-full left-6 right-6 mb-3 bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 rounded-2xl shadow-xl overflow-hidden z-50"
+                    style="display: none;">
+
+                    <div
+                        class="px-4 py-3 border-b border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50">
                         <p class="text-xs font-bold text-slate-800 dark:text-white">samuel@agrisystem.com</p>
                     </div>
-                    <a href="#" class="flex items-center gap-2 px-4 py-3 text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+                    <a href="#"
+                        class="flex items-center gap-2 px-4 py-3 text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                        </svg>
                         Profil Saya
                     </a>
-                    <a href="/settings" class="flex items-center gap-2 px-4 py-3 text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                    <a href="/settings"
+                        class="flex items-center gap-2 px-4 py-3 text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z">
+                            </path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                        </svg>
                         Pengaturan
                     </a>
                     <div class="h-px bg-slate-100 dark:bg-slate-700"></div>
                     <form method="POST" action="{{ route('logout') }}">
                         @csrf
-                        <button type="submit" class="w-full flex items-center gap-2 px-4 py-3 text-sm text-red-600 dark:text-red-400 font-medium hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+                        <button type="submit"
+                            class="w-full flex items-center gap-2 px-4 py-3 text-sm text-red-600 dark:text-red-400 font-medium hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1">
+                                </path>
+                            </svg>
                             Keluar
                         </button>
                     </form>
                 </div>
 
                 <!-- Tombol Profile -->
-                <button @click="toggleProfile()" class="w-full flex items-center gap-3 bg-slate-50 dark:bg-slate-800/50 hover:bg-slate-100 dark:hover:bg-slate-800 p-3 rounded-2xl border border-slate-100 dark:border-slate-800 hover:ring-2 hover:ring-green-500/20 transition-all text-left outline-none">
-                    <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-green-500 to-green-700 flex items-center justify-center text-white font-bold text-xs border-2 border-white dark:border-slate-700 flex-shrink-0">SA</div>
+                <button @click="toggleProfile()"
+                    class="w-full flex items-center gap-3 bg-slate-50 dark:bg-slate-800/50 hover:bg-slate-100 dark:hover:bg-slate-800 p-3 rounded-2xl border border-slate-100 dark:border-slate-800 hover:ring-2 hover:ring-green-500/20 transition-all text-left outline-none">
+                    <div
+                        class="w-10 h-10 rounded-full bg-gradient-to-tr from-green-500 to-green-700 flex items-center justify-center text-white font-bold text-xs border-2 border-white dark:border-slate-700 flex-shrink-0">
+                        SA</div>
                     <div class="flex flex-col overflow-hidden flex-1">
-                        <span class="text-xs font-bold text-slate-800 dark:text-slate-200 truncate">{{ auth()->user()->name ?? 'Guest' }}</span>
-                        <span class="text-[10px] text-slate-400 font-medium">{{ auth()->check() ? ucfirst(auth()->user()->role) : 'Visitor' }}</span>
+                        <span
+                            class="text-xs font-bold text-slate-800 dark:text-slate-200 truncate">{{ auth()->user()->name ?? 'Guest' }}</span>
+                        <span
+                            class="text-[10px] text-slate-400 font-medium">{{ auth()->check() ? ucfirst(auth()->user()->role) : 'Visitor' }}</span>
                     </div>
-                    <svg class="w-4 h-4 text-slate-400 flex-shrink-0 transition-transform" :class="profileOpen ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path></svg>
+                    <svg class="w-4 h-4 text-slate-400 flex-shrink-0 transition-transform"
+                        :class="profileOpen ? 'rotate-180' : ''" fill="none" stroke="currentColor"
+                        viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7">
+                        </path>
+                    </svg>
                 </button>
             </div>
         </aside>
 
         {{-- MAIN CONTENT AREA --}}
         <div class="flex-1 flex flex-col min-w-0 overflow-hidden">
-            <header class="h-20 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-gray-100 dark:border-slate-800 flex items-center justify-between px-8 z-10 flex-shrink-0">
+            <header
+                class="h-20 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-gray-100 dark:border-slate-800 flex items-center justify-between px-8 z-10 flex-shrink-0">
                 <div class="flex items-center gap-4">
-                    <h2 class="text-sm font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest hidden md:block">
-                        Sistem / <span class="text-slate-800 dark:text-white capitalize">{{ request()->path() == '/' ? 'Beranda' : request()->path() }}</span>
+                    <h2
+                        class="text-sm font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest hidden md:block">
+                        Sistem / <span
+                            class="text-slate-800 dark:text-white capitalize">{{ request()->path() == '/' ? 'Beranda' : request()->path() }}</span>
                     </h2>
                 </div>
 
                 <div class="flex items-center gap-4">
-                    
+
                     {{-- SEARCH BAR INTERAKTIF --}}
                     <div class="relative hidden sm:block">
                         <div class="relative flex items-center">
-                            <svg class="absolute left-3.5 w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
-                            <input type="text" 
-                                   x-model="searchQuery" 
-                                   @focus="openSearch()" 
-                                   @click.away="closeSearch()"
-                                   x-ref="searchInput"
-                                   class="bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700 rounded-xl py-2 pl-10 pr-4 text-xs w-64 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-green-500/20 focus:border-green-500/50 shadow-inner transition-all placeholder-slate-400" 
-                                   placeholder="Cari data, penyakit, sensor...">
-                            
+                            <svg class="absolute left-3.5 w-4 h-4 text-slate-400" fill="none"
+                                stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                            </svg>
+                            <input type="text" x-model="searchQuery" @focus="openSearch()"
+                                @click.away="closeSearch()" x-ref="searchInput"
+                                class="bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700 rounded-xl py-2 pl-10 pr-4 text-xs w-64 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-green-500/20 focus:border-green-500/50 shadow-inner transition-all placeholder-slate-400"
+                                placeholder="Cari data, penyakit, sensor...">
+
                             <!-- Search clear button -->
-                            <button x-show="searchQuery.length > 0" @click="clearSearch()" class="absolute right-3 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200" style="display: none;">
-                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                            <button x-show="searchQuery.length > 0" @click="clearSearch()"
+                                class="absolute right-3 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+                                style="display: none;">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M6 18L18 6M6 6l12 12"></path>
+                                </svg>
                             </button>
                         </div>
 
                         <!-- Dropdown Hasil Pencarian -->
-                        <div x-show="searchOpen && searchQuery.length > 0"
-                             x-transition
-                             class="absolute top-full right-0 mt-2 w-80 bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 rounded-2xl shadow-xl overflow-hidden z-50" style="display: none;">
+                        <div x-show="searchOpen && searchQuery.length > 0" x-transition
+                            class="absolute top-full right-0 mt-2 w-80 bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 rounded-2xl shadow-xl overflow-hidden z-50"
+                            style="display: none;">
 
-                            <div class="p-3 text-[10px] font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50">
-                                Hasil untuk "<span x-text="searchQuery" class="text-green-600 dark:text-green-400"></span>"
+                            <div
+                                class="p-3 text-[10px] font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50">
+                                Hasil untuk "<span x-text="searchQuery"
+                                    class="text-green-600 dark:text-green-400"></span>"
                             </div>
 
                             <!-- Hasil Pencarian -->
                             <div class="py-2 max-h-80 overflow-y-auto">
                                 <template x-for="item in filteredResults" :key="item.url">
-                                    <a :href="item.url" class="flex items-center gap-4 px-4 py-2 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
-                                        <div :class="getColor(item.icon)" class="p-2 rounded-lg" x-html="getIcon(item.icon)"></div>
+                                    <a :href="item.url"
+                                        class="flex items-center gap-4 px-4 py-2 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
+                                        <div :class="getColor(item.icon)" class="p-2 rounded-lg"
+                                            x-html="getIcon(item.icon)"></div>
                                         <div class="flex-1">
-                                            <p class="text-sm font-bold text-slate-800 dark:text-white" x-text="item.title"></p>
+                                            <p class="text-sm font-bold text-slate-800 dark:text-white"
+                                                x-text="item.title"></p>
                                             <p class="text-xs text-slate-500" x-text="item.desc"></p>
                                         </div>
                                     </a>
                                 </template>
 
                                 <!-- Pesan jika tidak ada hasil -->
-                                <div x-show="filteredResults.length === 0" class="px-4 py-6 text-center" style="display: none;">
-                                    <svg class="w-10 h-10 mx-auto text-slate-300 dark:text-slate-600 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                <div x-show="filteredResults.length === 0" class="px-4 py-6 text-center"
+                                    style="display: none;">
+                                    <svg class="w-10 h-10 mx-auto text-slate-300 dark:text-slate-600 mb-2"
+                                        fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z">
+                                        </path>
                                     </svg>
-                                    <p class="text-sm text-slate-500 dark:text-slate-400">Tidak ditemukan hasil untuk "<span x-text="searchQuery"></span>"</p>
-                                    <p class="text-xs text-slate-400 mt-1">Coba kata kunci lain: beranda, penyakit, panen, chatbot</p>
+                                    <p class="text-sm text-slate-500 dark:text-slate-400">Tidak ditemukan hasil untuk
+                                        "<span x-text="searchQuery"></span>"</p>
+                                    <p class="text-xs text-slate-400 mt-1">Coba kata kunci lain: beranda, penyakit,
+                                        panen, chatbot</p>
                                 </div>
                             </div>
                         </div>
                     </div>
 
                     {{-- DARK MODE TOGGLE INTERAKTIF --}}
-                    <button @click="toggleTheme()" class="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:ring-2 hover:ring-green-500/20 transition-all duration-300 relative overflow-hidden outline-none">
+                    <button @click="toggleTheme()"
+                        class="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:ring-2 hover:ring-green-500/20 transition-all duration-300 relative overflow-hidden outline-none">
                         <!-- Icon Sun (Mode Dark) -->
-                        <svg x-show="darkMode" style="display: none;" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707m12.728 0l-.707-.707M6.343 6.343l-.707-.707m12.728 12.728L5.121 5.121M19 12a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
-                        
+                        <svg x-show="darkMode" style="display: none;" class="w-5 h-5" fill="none"
+                            stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707m12.728 0l-.707-.707M6.343 6.343l-.707-.707m12.728 12.728L5.121 5.121M19 12a7 7 0 11-14 0 7 7 0 0114 0z">
+                            </path>
+                        </svg>
+
                         <!-- Icon Moon (Mode Light) -->
-                        <svg x-show="!darkMode" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
+                        <svg x-show="!darkMode" class="w-5 h-5" fill="none" stroke="currentColor"
+                            viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z">
+                            </path>
+                        </svg>
                     </button>
 
                     <div class="h-8 w-[1px] bg-gray-100 dark:bg-slate-800 mx-1"></div>
 
                     <!-- Notifikasi -->
-                    <button class="relative p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 text-slate-400 hover:text-green-600 transition-all outline-none">
-                        <span class="absolute top-2 right-2.5 w-2 h-2 bg-red-500 rounded-full border-2 border-white dark:border-slate-800"></span>
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
+                    <button
+                        class="relative p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 text-slate-400 hover:text-green-600 transition-all outline-none">
+                        <span
+                            class="absolute top-2 right-2.5 w-2 h-2 bg-red-500 rounded-full border-2 border-white dark:border-slate-800"></span>
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9">
+                            </path>
+                        </svg>
                     </button>
                 </div>
             </header>
 
-            <main class="flex-1 overflow-y-auto p-6 md:p-10 bg-[#FDFCFB] dark:bg-slate-950 transition-colors duration-300">
+            <main
+                class="flex-1 overflow-y-auto p-6 md:p-10 bg-[#FDFCFB] dark:bg-slate-950 transition-colors duration-300">
                 @yield('content')
             </main>
         </div>
@@ -250,42 +401,54 @@
                         desc: 'Tinjauan kebun dan data sensor real-time',
                         icon: 'home',
                         url: '/dashboard',
-                        keywords: ['beranda', 'dashboard', 'utama', 'home', 'kebun', 'sensor', 'realtime']
+                        keywords: ['beranda', 'dashboard', 'utama', 'home', 'kebun', 'sensor',
+                            'realtime'
+                        ]
                     },
                     {
                         title: 'Klasifikasi Penyakit',
                         desc: 'Diagnosis penyakit tanaman dengan Vision AI',
                         icon: 'disease',
                         url: '/disease',
-                        keywords: ['penyakit', 'klasifikasi', 'diagnosis', 'daun', 'hama', 'wereng', 'ai', 'vision', 'gambar', 'foto']
+                        keywords: ['penyakit', 'klasifikasi', 'diagnosis', 'daun', 'hama', 'wereng',
+                            'ai', 'vision', 'gambar', 'foto'
+                        ]
                     },
                     {
                         title: 'Prediksi Pertumbuhan',
                         desc: 'Pantau siklus tanaman dan estimasi panen',
                         icon: 'growth',
                         url: '/growth',
-                        keywords: ['pertumbuhan', 'prediksi', 'panen', 'tanaman', 'padi', 'siklus', 'hari', 'estimasi']
+                        keywords: ['pertumbuhan', 'prediksi', 'panen', 'tanaman', 'padi', 'siklus',
+                            'hari', 'estimasi'
+                        ]
                     },
                     {
                         title: 'Chatbot AGA',
                         desc: 'Tanya jawab dengan asisten AI tentang irigasi dan cuaca',
                         icon: 'chat',
                         url: '/chatbot',
-                        keywords: ['chatbot', 'tanya', 'chat', 'asisten', 'ai', 'bantuan', 'aga', 'pesan', 'diskusi']
+                        keywords: ['chatbot', 'tanya', 'chat', 'asisten', 'ai', 'bantuan', 'aga',
+                            'pesan', 'diskusi'
+                        ]
                     },
                     {
                         title: 'Laporan',
                         desc: 'Ekspor data sensor ke Excel atau PDF',
                         icon: 'report',
                         url: '/reports',
-                        keywords: ['laporan', 'report', 'ekspor', 'data', 'sensor', 'excel', 'pdf', 'download', 'log']
+                        keywords: ['laporan', 'report', 'ekspor', 'data', 'sensor', 'excel', 'pdf',
+                            'download', 'log'
+                        ]
                     },
                     {
                         title: 'Pengaturan',
                         desc: 'Konfigurasi lokasi, API BMKG, dan IoT',
                         icon: 'settings',
                         url: '/settings',
-                        keywords: ['pengaturan', 'settings', 'konfigurasi', 'api', 'bmkg', 'iot', 'esp32', 'setup', 'config']
+                        keywords: ['pengaturan', 'settings', 'konfigurasi', 'api', 'bmkg', 'iot',
+                            'esp32', 'setup', 'config'
+                        ]
                     },
 
                     // === SENSOR IoT ===
@@ -294,14 +457,18 @@
                         desc: 'Sensor IoT - Data real-time kelembapan tanah',
                         icon: 'moisture',
                         url: '/dashboard',
-                        keywords: ['kelembapan', 'tanah', 'moisture', 'soil', 'air', 'water', 'sensor', 'kadar', 'air', 'basah', 'kering']
+                        keywords: ['kelembapan', 'tanah', 'moisture', 'soil', 'air', 'water',
+                            'sensor', 'kadar', 'air', 'basah', 'kering'
+                        ]
                     },
                     {
                         title: 'pH Tanah',
                         desc: 'Sensor IoT - Tingkat keasaman tanah',
                         icon: 'ph',
                         url: '/dashboard',
-                        keywords: ['ph', 'tanah', 'asam', 'basa', 'soil', 'sensor', 'derajat', 'keasaman', 'netral']
+                        keywords: ['ph', 'tanah', 'asam', 'basa', 'soil', 'sensor', 'derajat',
+                            'keasaman', 'netral'
+                        ]
                     },
 
                     // === DATA BMKG ===
@@ -310,21 +477,27 @@
                         desc: 'API BMKG - Suhu udara area sekitar',
                         icon: 'temp',
                         url: '/dashboard',
-                        keywords: ['suhu', 'udara', 'temperatur', 'panas', 'celcius', 'bmkg', 'derajat', 'hangat', 'dingin']
+                        keywords: ['suhu', 'udara', 'temperatur', 'panas', 'celcius', 'bmkg',
+                            'derajat', 'hangat', 'dingin'
+                        ]
                     },
                     {
                         title: 'Curah Hujan',
                         desc: 'API BMKG - Prediksi dan data curah hujan',
                         icon: 'rain',
                         url: '/dashboard',
-                        keywords: ['hujan', 'curah', 'hmm', 'bmkg', 'cuaca', 'air', 'hujan', 'prediksi', 'mm']
+                        keywords: ['hujan', 'curah', 'hmm', 'bmkg', 'cuaca', 'air', 'hujan',
+                            'prediksi', 'mm'
+                        ]
                     },
                     {
                         title: 'Kelembapan Udara',
                         desc: 'API BMKG - Tingkat kelembapan udara',
                         icon: 'humidity',
                         url: '/dashboard',
-                        keywords: ['kelembapan', 'udara', 'humidity', 'bmkg', 'cuaca', 'persen', '%', 'basah', 'kering']
+                        keywords: ['kelembapan', 'udara', 'humidity', 'bmkg', 'cuaca', 'persen',
+                            '%', 'basah', 'kering'
+                        ]
                     },
 
                     // === FITUR LAINNYA ===
@@ -333,14 +506,18 @@
                         desc: 'Saran penyiraman dari AI berdasarkan sensor dan BMKG',
                         icon: 'irrigation',
                         url: '/dashboard',
-                        keywords: ['irigasi', 'penyiraman', 'air', 'pompa', 'rekomendasi', 'saran', 'siram', 'manual', 'otomatis']
+                        keywords: ['irigasi', 'penyiraman', 'air', 'pompa', 'rekomendasi', 'saran',
+                            'siram', 'manual', 'otomatis'
+                        ]
                     },
                     {
                         title: 'Lokasi Kebun',
                         desc: 'Pengaturan lokasi lahan untuk data BMKG',
                         icon: 'location',
                         url: '/settings',
-                        keywords: ['lokasi', 'kebun', 'lahan', 'kota', 'kabupaten', 'bmkg', 'area', 'daerah', 'tempat', 'alamat']
+                        keywords: ['lokasi', 'kebun', 'lahan', 'kota', 'kabupaten', 'bmkg', 'area',
+                            'daerah', 'tempat', 'alamat'
+                        ]
                     },
 
                     // === ENTRI KHUSUS UNTUK KATA UMUM (Agar mudah ditemukan) ===
@@ -476,11 +653,21 @@
                 },
 
                 // Metode ini diperlukan agar lolos keamanan CSP @alpinejs/csp
-                toggleTheme() { this.darkMode = !this.darkMode; },
-                toggleProfile() { this.profileOpen = !this.profileOpen; },
-                closeProfile() { this.profileOpen = false; },
-                openSearch() { this.searchOpen = true; },
-                closeSearch() { this.searchOpen = false; },
+                toggleTheme() {
+                    this.darkMode = !this.darkMode;
+                },
+                toggleProfile() {
+                    this.profileOpen = !this.profileOpen;
+                },
+                closeProfile() {
+                    this.profileOpen = false;
+                },
+                openSearch() {
+                    this.searchOpen = true;
+                },
+                closeSearch() {
+                    this.searchOpen = false;
+                },
                 clearSearch() {
                     this.searchQuery = '';
                     this.$refs.searchInput.focus();
@@ -488,6 +675,7 @@
             }));
         });
     </script>
+    @stack('modals')
 </body>
 
 </html>
