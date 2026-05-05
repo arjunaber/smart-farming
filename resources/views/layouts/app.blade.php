@@ -74,7 +74,21 @@
                 </a>
 
                 {{-- REPORTS & SETTINGS DIKEMBALIKAN --}}
-                <p class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] px-4 mt-6 mb-2">Kelola</p>
+<p class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] px-4 mt-6 mb-2">Kelola</p>
+                <a href="/lahan" class="flex items-center gap-3 px-4 py-3.5 rounded-2xl transition-all font-medium group {{ request()->is('lahan*') ? 'bg-green-50 dark:bg-green-500/10 text-green-700 dark:text-green-400 font-bold border-r-4 border-green-600' : 'text-slate-500 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-800/50' }}">
+                    <svg class="w-5 h-5 {{ request()->is('lahan*') ? '' : 'group-hover:text-green-600 transition-colors' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2h10a2 2 0 012 2v2M5 11h14"></path></svg>
+                    Lahan
+                </a>
+                <a href="/logbook" class="flex items-center gap-3 px-4 py-3.5 rounded-2xl transition-all font-medium group {{ request()->is('logbook*') ? 'bg-green-50 dark:bg-green-500/10 text-green-700 dark:text-green-400 font-bold border-r-4 border-green-600' : 'text-slate-500 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-800/50' }}">
+                    <svg class="w-5 h-5 {{ request()->is('logbook*') ? '' : 'group-hover:text-green-600 transition-colors' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    Logbook
+                </a>
+@if(auth()->check() && Auth::user()->role === 'super_admin')
+                <a href="/admin" class="flex items-center gap-3 px-4 py-3.5 rounded-2xl transition-all font-medium group {{ request()->is('admin*') ? 'bg-purple-50 dark:bg-purple-500/10 text-purple-700 dark:text-purple-400 font-bold border-r-4 border-purple-600' : 'text-slate-500 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-800/50' }}">
+                    <svg class="w-5 h-5 {{ request()->is('admin*') ? '' : 'group-hover:text-purple-600 transition-colors' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+                    Admin
+                </a>
+                @endif
                 <a href="/reports" class="flex items-center gap-3 px-4 py-3.5 rounded-2xl transition-all font-medium group {{ request()->is('reports') ? 'bg-green-50 dark:bg-green-500/10 text-green-700 dark:text-green-400 font-bold border-r-4 border-green-600' : 'text-slate-500 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-800/50' }}">
                     <svg class="w-5 h-5 {{ request()->is('reports') ? '' : 'group-hover:text-green-600 transition-colors' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
                     Laporan
@@ -111,8 +125,8 @@
                         Pengaturan
                     </a>
                     <div class="h-px bg-slate-100 dark:bg-slate-700"></div>
-                    <form method="POST" action="#">
-                        <!-- @csrf -->
+                    <form method="POST" action="{{ route('logout') }}">
+                        @csrf
                         <button type="submit" class="w-full flex items-center gap-2 px-4 py-3 text-sm text-red-600 dark:text-red-400 font-medium hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
                             Keluar
@@ -124,8 +138,8 @@
                 <button @click="toggleProfile()" class="w-full flex items-center gap-3 bg-slate-50 dark:bg-slate-800/50 hover:bg-slate-100 dark:hover:bg-slate-800 p-3 rounded-2xl border border-slate-100 dark:border-slate-800 hover:ring-2 hover:ring-green-500/20 transition-all text-left outline-none">
                     <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-green-500 to-green-700 flex items-center justify-center text-white font-bold text-xs border-2 border-white dark:border-slate-700 flex-shrink-0">SA</div>
                     <div class="flex flex-col overflow-hidden flex-1">
-                        <span class="text-xs font-bold text-slate-800 dark:text-slate-200 truncate">Samuel Arjuna</span>
-                        <span class="text-[10px] text-slate-400 font-medium">Pengelola Sistem</span>
+                        <span class="text-xs font-bold text-slate-800 dark:text-slate-200 truncate">{{ auth()->user()->name ?? 'Guest' }}</span>
+                        <span class="text-[10px] text-slate-400 font-medium">{{ auth()->check() ? ucfirst(auth()->user()->role) : 'Visitor' }}</span>
                     </div>
                     <svg class="w-4 h-4 text-slate-400 flex-shrink-0 transition-transform" :class="profileOpen ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path></svg>
                 </button>
