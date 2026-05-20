@@ -2,22 +2,14 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
-use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
 class User extends Authenticatable
 {
-    /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable;
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var list<string>
-     */
     protected $fillable = [
         'name',
         'email',
@@ -25,34 +17,26 @@ class User extends Authenticatable
         'role',
     ];
 
-    /**
-     * Lahan yang dimiliki user
-     */
-    public function lahan()
-    {
-        return $this->hasMany(Lahan::class);
-    }
-
-    /**
-     * The attributes that should be hidden for serialization.
-     *
-     * @var list<string>
-     */
     protected $hidden = [
         'password',
         'remember_token',
     ];
 
-    /**
-     * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
-     */
-    protected function casts(): array
+    // Relasi One-to-One ke profil Petani
+    public function petani()
     {
-        return [
-            'email_verified_at' => 'datetime',
-            'password' => 'hashed',
-        ];
+        return $this->hasOne(Petani::class, 'user_id');
+    }
+
+    // Dokumen SOP yang diunggah oleh user (Admin/Penyuluh)
+    public function sopDocuments()
+    {
+        return $this->hasMany(SopDocument::class, 'uploaded_by');
+    }
+
+    // Riwayat Chatbot milik user
+    public function chatbotHistories()
+    {
+        return $this->hasMany(ChatbotHistory::class, 'user_id');
     }
 }

@@ -3,8 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\Lahan;
+use App\Models\MasterKomoditas;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class LahanController extends Controller
 {
@@ -69,17 +71,26 @@ class LahanController extends Controller
 
     public function index()
     {
-        $lahan = Auth::user()->lahan()
-            ->withCount('logbookEntries')
+        $petani = Auth::user()->petani;
+
+        // Perbaikan logis: Menghindari overwrite variabel agar data terfilter per-petani secara konsisten
+        $lahan = $petani
+            ? $petani->lahan()
+            ->with(['komoditas'])
+            ->withCount(['siklusTanam as logbook_entries_count' => function ($query) {
+                $query->leftJoin('logbook_entries', 'siklus_tanam.id', '=', 'logbook_entries.siklus_tanam_id')
+                    ->select(DB::raw('count(logbook_entries.id)'));
+            }])
             ->latest()
-            ->paginate(10);
+            ->paginate(10)
+            : collect();
 
         return view('lahan.index', compact('lahan'));
     }
 
     public function create()
     {
-        $komoditasList = ['Padi', 'Jagung', 'Kedelai', 'Kopi', 'Teh', 'Jahe Gajah', 'Kunyit', 'Kencur'];
+        $komoditasList = MasterKomoditas::all();
         $lokasiList = self::$lokasiWilayah;
 
         return view('lahan.create', compact('komoditasList', 'lokasiList'));
@@ -87,25 +98,24 @@ class LahanController extends Controller
 
     public function store(Request $request)
     {
+        $petani = Auth::user()->petani;
         $validated = $request->validate([
-            'nama_lahan' => 'required|string|max:255',
-            'luas' => 'required|numeric|min:0',
-            'lokasi' => 'required|string',
-            'komoditas_utama' => 'required|string',
-            'status' => 'required|in:Aktif,Persiapan,Istirahat',
-            'deskripsi' => 'nullable|string',
+            'nama_lahan'          => 'required|string|max:150',
+            'lokasi'              => 'required|string',
+            'luas'                => 'nullable|numeric|min:0', // Validasi Tambahan Kolom Luas
+            'komoditas_id'        => 'required|exists:master_komoditas,id',
+            'polygon_coordinates' => 'nullable|json',
         ]);
 
-        // Sangat Penting: Menyertakan user_id dari user yang sedang login
-        Auth::user()->lahan()->create($validated);
+        $lahan = $petani->lahan()->create($validated);
 
-        return redirect()->route('lahan.index')->with('success', 'Lahan berhasil ditambahkan!');
+        return redirect()->route('lahan.index')->with('success', 'Lahan berhasil disimpan!');
     }
 
     public function show(Lahan $lahan)
     {
         $this->authorizeOwner($lahan);
-        $lahan->load(['logbookEntries' => fn($q) => $q->latest()]);
+        $lahan->load(['komoditas', 'siklusTanam.logbookEntries' => fn($q) => $q->latest()]);
 
         return view('lahan.show', compact('lahan'));
     }
@@ -113,10 +123,19 @@ class LahanController extends Controller
     public function edit(Lahan $lahan)
     {
         $this->authorizeOwner($lahan);
-        $komoditasList = ['Padi', 'Jagung', 'Kedelai', 'Kopi', 'Teh', 'Jahe Gajah', 'Kunyit', 'Kencur'];
+        $komoditasList = MasterKomoditas::all();
         $lokasiList = self::$lokasiWilayah;
 
-        return view('lahan.edit', compact('lahan', 'komoditasList', 'lokasiList'));
+        // MENYELESAIKAN MASALAH DROPDOWN KOSONG:
+        // Jika data lokasi lama di DB tersimpan sebagai teks (bukan kode), kita cari kodenya secara terbalik
+        if (!array_key_exists($lahan->lokasi, $lokasiList)) {
+            $kodeDitemukan = array_search($lahan->lokasi, $lokasiList);
+            if ($kodeDitemukan !== false) {
+                $lahan->lokasi = $kodeDitemukan; // Set nilainya sementara ke dalam kode wilayah agar dicocokkan Blade
+            }
+        }
+
+        return view('lahan.edit', compact('lahan', 'lokasiList', 'komoditasList'));
     }
 
     public function update(Request $request, Lahan $lahan)
@@ -124,11 +143,11 @@ class LahanController extends Controller
         $this->authorizeOwner($lahan);
 
         $validated = $request->validate([
-            'nama_lahan' => 'required|string|max:100',
-            'luas' => 'required|numeric|min:0',
-            'lokasi' => 'required|string',
-            'status' => 'required|in:Aktif,Persiapan,Istirahat',
-            'deskripsi' => 'nullable|string',
+            'nama_lahan'          => 'required|string|max:150',
+            'lokasi'              => 'required|string',
+            'luas'                => 'nullable|numeric|min:0', // Validasi Tambahan Kolom Luas
+            'komoditas_id'        => 'required|exists:master_komoditas,id',
+            'polygon_coordinates' => 'nullable|json',
         ]);
 
         $lahan->update($validated);
@@ -146,8 +165,29 @@ class LahanController extends Controller
 
     private function authorizeOwner(Lahan $lahan)
     {
-        if ($lahan->user_id !== Auth::id()) {
+        $petani = Auth::user()->petani;
+
+        if (!$petani || $lahan->petani_id !== $petani->id) {
             abort(403, 'Anda tidak memiliki akses ke data lahan ini.');
         }
+    }
+
+    public function updatePolygon(Request $request, int $id): \Illuminate\Http\RedirectResponse
+    {
+        $request->validate([
+            'polygon_coordinates' => 'required|string',
+            'luas'                => 'nullable|numeric|min:0', // Tambah luas jika update lewat peta langsung
+        ]);
+
+        $lahan = Lahan::findOrFail($id);
+        $lahan->polygon_coordinates = json_decode($request->polygon_coordinates, true);
+
+        if ($request->has('luas')) {
+            $lahan->luas = $request->luas;
+        }
+
+        $lahan->save();
+
+        return redirect()->back()->with('success', 'Koordinat area dan luas lahan berhasil diperbarui.');
     }
 }

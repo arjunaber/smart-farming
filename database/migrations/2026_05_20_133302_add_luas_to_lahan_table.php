@@ -11,9 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('tanaman', function (Blueprint $table) {
-            $table->integer('durasi_min')->nullable();
-            $table->integer('durasi_max')->nullable();
+        Schema::table('lahan', function (Blueprint $table) {
+            // Menambahkan kolom luas dengan tipe desimal (misal: 12.34 HA) diletakkan setelah kolom lokasi
+            $table->decimal('luas', 8, 2)->nullable()->after('lokasi');
         });
     }
 
@@ -22,8 +22,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('tanaman', function (Blueprint $table) {
-            //
+        Schema::table('lahan', function (Blueprint $table) {
+            $table->dropColumn('luas');
         });
     }
 };

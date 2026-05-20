@@ -41,6 +41,8 @@
     </script>
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 </head>
 
 <body
@@ -101,19 +103,6 @@
 
                 <p
                     class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] px-4 mt-6 mb-2">
-                    Prediksi</p>
-                <a href="/growth"
-                    class="flex items-center gap-3 px-4 py-3.5 rounded-2xl transition-all font-medium group {{ request()->is('growth') ? 'bg-green-50 dark:bg-green-500/10 text-green-700 dark:text-green-400 font-bold border-r-4 border-green-600' : 'text-slate-500 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-800/50' }}">
-                    <svg class="w-5 h-5 {{ request()->is('growth') ? '' : 'group-hover:text-green-600 transition-colors' }}"
-                        fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path>
-                    </svg>
-                    Pertumbuhan
-                </a>
-
-                <p
-                    class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] px-4 mt-6 mb-2">
                     Asisten AI</p>
                 <a href="/chatbot"
                     class="flex items-center gap-3 px-4 py-3.5 rounded-2xl transition-all font-medium group {{ request()->is('chatbot') ? 'bg-green-50 dark:bg-green-500/10 text-green-700 dark:text-green-400 font-bold border-r-4 border-green-600' : 'text-slate-500 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-800/50' }}">
@@ -125,6 +114,7 @@
                     </svg>
                     Chatbot Tanya
                 </a>
+
 
                 {{-- REPORTS & SETTINGS DIKEMBALIKAN --}}
                 <p
@@ -139,6 +129,16 @@
                         </path>
                     </svg>
                     Lahan
+                </a>
+                <a href="/siklus-tanam"
+                    class="flex items-center gap-3 px-4 py-3.5 rounded-2xl transition-all font-medium group {{ request()->is('siklus-tanam*') ? 'bg-green-50 dark:bg-green-500/10 text-green-700 dark:text-green-400 font-bold border-r-4 border-green-600' : 'text-slate-500 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-800/50' }}">
+                    <svg class="w-5 h-5 {{ request()->is('siklus-tanam*') ? '' : 'group-hover:text-green-600 transition-colors' }}"
+                        fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15">
+                        </path>
+                    </svg>
+                    Siklus Tanam
                 </a>
                 <a href="/logbook"
                     class="flex items-center gap-3 px-4 py-3.5 rounded-2xl transition-all font-medium group {{ request()->is('logbook*') ? 'bg-green-50 dark:bg-green-500/10 text-green-700 dark:text-green-400 font-bold border-r-4 border-green-600' : 'text-slate-500 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-800/50' }}">
@@ -383,8 +383,8 @@
             </main>
         </div>
     </div>
-
     {{-- SCRIPT ALPINE CSP-COMPLIANT --}}
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
         document.addEventListener('alpine:init', () => {
             Alpine.data('layout', () => ({
@@ -674,8 +674,47 @@
                 }
             }));
         });
+        document.addEventListener('DOMContentLoaded', function() {
+            // 1. Notifikasi Berhasil
+            @if (session('success'))
+                Swal.fire({
+                    title: 'Berhasil!',
+                    text: "{{ session('success') }}",
+                    icon: 'success',
+                    showConfirmButton: false,
+                    timer: 3000,
+                    timerProgressBar: true,
+                    iconColor: '#16a34a',
+                    customClass: {
+                        popup: 'rounded-[2rem] border-none shadow-2xl dark:bg-slate-900 dark:text-white',
+                        title: 'font-black uppercase tracking-tight text-2xl',
+                    }
+                });
+            @endif
+
+            // 2. Notifikasi Error
+            @if (session('error'))
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Gagal!',
+                    text: "{{ session('error') }}",
+                    confirmButtonColor: '#ef4444'
+                });
+            @endif
+
+            // 3. Error Validasi Laravel
+            @if ($errors->any())
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Cek Kembali',
+                    text: 'Pastikan semua data terisi dengan benar.',
+                    confirmButtonColor: '#f59e0b'
+                });
+            @endif
+        });
     </script>
     @stack('modals')
+    @stack('scripts')
 </body>
 
 </html>

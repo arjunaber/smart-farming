@@ -6,24 +6,21 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    public function up()
+    public function up(): void
     {
         Schema::create('lahan', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained()->onDelete('cascade');
-            $table->string('nama_lahan');
-            $table->decimal('luas', 8, 2)->default(0.25); // hektar
-            $table->string('lokasi');
-            $table->json('komoditas'); // [{"nama":"Padi IR64", "fase":"vegetatif"}]
-            $table->decimal('kesesuaian_score', 5, 2)->default(0); // %
-            $table->text('deskripsi')->nullable();
+            $table->foreignId('petani_id')->constrained('petani')->cascadeOnDelete();
+            $table->string('nama_lahan', 150);
+            $table->foreignId('komoditas_id')->constrained('master_komoditas');
+            $table->json('polygon_coordinates')->nullable();
+            $table->string('lokasi', 255);
             $table->timestamps();
         });
     }
 
-    public function down()
+    public function down(): void
     {
         Schema::dropIfExists('lahan');
     }
 };
-
