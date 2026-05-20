@@ -5,25 +5,21 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class LogbookEntry extends Model
+class TransaksiKeuangan extends Model
 {
     use HasFactory;
 
-    protected $table = 'logbook_entries';
+    protected $table = 'transaksi_keuangan';
 
     protected $fillable = [
         'siklus_tanam_id',
-        'activity_date',
-        'jenis_kegiatan',
-        'title',
-        'description',
-        'kuantitas',
-        'satuan',
+        'jenis_transaksi',
+        'jumlah',
+        'keterangan',
     ];
 
     protected $casts = [
-        'activity_date' => 'date',
-        'kuantitas' => 'decimal:2',
+        'jumlah' => 'decimal:2',
     ];
 
     public function siklusTanam()

@@ -47,7 +47,7 @@
                         <div class="flex justify-between items-start mb-4">
                             <div class="bg-green-100 dark:bg-green-500/10 p-3 rounded-2xl">
                                 {{-- Mengambil emoji dari kolom komoditas (JSON) --}}
-                                <span class="text-2xl">{{ $item->komoditas[0]['emoji'] ?? '🌿' }}</span>
+                                <span class="text-2xl">{{ $item->komoditas->emoji ?? '🌿' }}</span>
                             </div>
                             <div class="text-right">
                                 <span class="text-xs font-black text-slate-400 uppercase tracking-tighter">Status
@@ -84,8 +84,8 @@
                             <div class="flex justify-between items-center text-sm">
                                 <span class="text-slate-400">Komoditas Utama:</span>
                                 <span class="font-bold text-slate-700 dark:text-slate-200">
-                                    {{-- Mengambil nama dari array JSON komoditas --}}
-                                    {{ $item->komoditas[0]['nama'] ?? 'Tidak ada data' }}
+                                    {{-- Mengambil nama dari relasi --}}
+                                    {{ $item->komoditas->nama_komoditas ?? 'Tidak ada data' }}
                                 </span>
                             </div>
                             <div class="flex justify-between items-center text-sm">
