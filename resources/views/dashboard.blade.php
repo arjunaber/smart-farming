@@ -220,27 +220,31 @@
             </div>
         </div>
     </div>
+    
     {{-- Modal Gambar/Edit Polygon Lahan --}}
     <div id="mapModal" class="hidden fixed inset-0 w-screen h-screen transition-all duration-300"
         style="z-index: 99999;">
         <div class="absolute inset-0 bg-slate-950/60 backdrop-blur-sm" onclick="closeMapModal()"></div>
         <div class="relative flex items-center justify-center min-h-screen p-4 pointer-events-none">
             <div
-                class="bg-white dark:bg-slate-900 rounded-[2.5rem] w-full max-w-2xl shadow-2xl border border-slate-200 dark:border-slate-800 pointer-events-auto overflow-hidden">
-                <div class="p-6 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center">
+                class="bg-white dark:bg-slate-900 rounded-[2.5rem] w-full max-w-2xl shadow-2xl border border-slate-200 dark:border-slate-800 pointer-events-auto overflow-hidden flex flex-col">
+                
+                {{-- HEADER MODAL (Rapi tanpa tombol IoT) --}}
+                <div class="p-6 border-b border-slate-100 dark:border-slate-800 flex justify-between items-start">
                     <div>
                         <h3 class="text-lg font-black text-slate-800 dark:text-white">Atur Koordinat Lahan</h3>
                         <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Klik minimal 3 titik di peta untuk
                             membentuk area lahan.</p>
                     </div>
+                    
                     <button type="button" onclick="clearDraftPolygon()"
-                        class="text-xs font-bold text-red-500 hover:text-red-600 bg-red-50 dark:bg-red-500/10 px-3 py-1.5 rounded-xl transition-colors">
+                        class="text-xs font-bold text-red-500 hover:text-red-600 bg-red-50 dark:bg-red-500/10 px-3 py-1.5 rounded-xl transition-colors shrink-0">
                         Reset Titik
                     </button>
                 </div>
 
                 {{-- Container Peta di Dalam Modal --}}
-                <div class="relative">
+                <div class="relative flex-1">
                     <div id="mapDraw" class="h-96 w-full z-0"></div>
                     <div
                         class="absolute bottom-4 left-4 z-[1000] bg-white/90 dark:bg-slate-900/90 backdrop-blur px-3 py-1.5 rounded-xl text-[10px] font-bold text-slate-700 dark:text-slate-300 border border-slate-100 dark:border-slate-800 shadow-sm">
@@ -248,25 +252,41 @@
                     </div>
                 </div>
 
-                <div class="p-6 bg-slate-50 dark:bg-slate-800/30 flex gap-3 justify-end">
-                    <button type="button" onclick="closeMapModal()"
-                        class="px-5 py-3 rounded-xl bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-bold text-sm hover:bg-slate-300 dark:hover:bg-slate-700 transition-colors">
-                        Batal
-                    </button>
-                    <form id="savePolygonForm" action="/lahan/{{ $lahan->id ?? '' }}/update-polygon" method="POST">
-                        @csrf
-                        @method('PUT')
-                        {{-- Input hidden untuk menampung json koordinat --}}
-                        <input type="hidden" name="polygon_coordinates" id="polygonCoordinatesInput">
-                        <button type="submit" id="btnSavePolygon" disabled
-                            class="px-5 py-3 rounded-xl bg-green-500 text-white font-bold text-sm hover:bg-green-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
-                            Simpan Area
+                {{-- FOOTER MODAL (Tombol IoT Kiri Bawah, Aksi Kanan Bawah) --}}
+                <div class="p-6 bg-slate-50 dark:bg-slate-800/30 flex flex-col sm:flex-row gap-4 justify-between items-center border-t border-slate-100 dark:border-slate-800">
+                    
+                    {{-- TOMBOL IOT DI KIRI BAWAH --}}
+                    <a href="{{ url('/iot-device/create' . (isset($lahan) ? '?lahan_id=' . $lahan->id : '')) }}" 
+                        class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-3 bg-blue-500 hover:bg-blue-600 text-white text-xs font-bold rounded-xl shadow-md shadow-blue-500/20 transition-all uppercase tracking-wider">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z"></path>
+                        </svg>
+                        + Tambah Alat IoT
+                    </a>
+                    
+                    {{-- TOMBOL BATAL & SIMPAN DI KANAN BAWAH --}}
+                    <div class="flex gap-3 w-full sm:w-auto">
+                        <button type="button" onclick="closeMapModal()"
+                            class="flex-1 sm:flex-none px-5 py-3 rounded-xl bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-bold text-sm hover:bg-slate-300 dark:hover:bg-slate-700 transition-colors">
+                            Batal
                         </button>
-                    </form>
+                        <form id="savePolygonForm" action="/lahan/{{ $lahan->id ?? '' }}/update-polygon" method="POST" class="flex-1 sm:flex-none">
+                            @csrf
+                            @method('PUT')
+                            {{-- Input hidden untuk menampung json koordinat --}}
+                            <input type="hidden" name="polygon_coordinates" id="polygonCoordinatesInput">
+                            <button type="submit" id="btnSavePolygon" disabled
+                                class="w-full px-5 py-3 rounded-xl bg-green-500 text-white font-bold text-sm hover:bg-green-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                                Simpan Area
+                            </button>
+                        </form>
+                    </div>
                 </div>
+
             </div>
         </div>
     </div>
+    
     {{-- Modal Peringatan IoT Belum Sinkron --}}
     @if (isset($needsSync) && $needsSync)
         <div x-data="{ open: true }" x-show="open" class="relative z-50" style="z-index: 100000;">
@@ -315,11 +335,8 @@
         let draftMarkers = [];
         let draftPolygonLayer = null;
 
-        // Perbaikan 1: Pastikan initialCoords selalu fallback ke array kosong yang valid jika null/kosong
         let rawCoords = @json($lahan->polygon_coordinates ?? []);
 
-        // Jika data dari database berupa string JSON (misal hasil casting bermasalah), parse dulu. 
-        // Jika sudah berbentuk array/object dari Laravel, langsung gunakan.
         if (typeof rawCoords === 'string' && rawCoords.trim() !== '') {
             try {
                 rawCoords = JSON.parse(rawCoords);
@@ -382,7 +399,6 @@
         function refreshDrawLayers() {
             clearDraftLayersOnly();
 
-            // Perbaikan 2: Amankan if-statement untuk memastikan draftCoordinates adalah Array
             if (!Array.isArray(draftCoordinates)) {
                 draftCoordinates = [];
             }
@@ -430,7 +446,6 @@
         window.openMapModal = function() {
             document.getElementById('mapModal').classList.remove('hidden');
 
-            // Menyalin array dengan aman
             draftCoordinates = JSON.parse(JSON.stringify(initialCoords));
             if (!Array.isArray(draftCoordinates)) {
                 draftCoordinates = [];
@@ -456,13 +471,12 @@
             setTimeout(() => {
                 drawMap.invalidateSize();
 
-                // Perbaikan 3: Hanya jalankan fitBounds BILA koordinat draft memang tersedia (> 0)
                 if (draftCoordinates && draftCoordinates.length > 0) {
                     refreshDrawLayers();
                     drawMap.fitBounds(L.polygon(draftCoordinates).getBounds());
                 } else {
-                    refreshDrawLayers(); // panggil untuk reset counter ke 0
-                    drawMap.setView([-2.5489, 118.0149], 5); // Default view: Seluruh Indonesia
+                    refreshDrawLayers();
+                    drawMap.setView([-2.5489, 118.0149], 5); // Default view
                 }
             }, 200);
         };
