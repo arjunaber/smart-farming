@@ -51,30 +51,46 @@
     {{-- Membungkus seluruh aplikasi dengan data Alpine CSP-Compliant --}}
     <div x-data="layout" class="flex h-screen overflow-hidden">
 
-        {{-- SIDEBAR --}}
+        {{-- OVERLAY GELAP (Hanya aktif di mobile/layar kecil saat sidebar terbuka) --}}
+        <div x-show="sidebarOpen" @click="closeSidebar()"
+            x-transition:enter="transition-opacity ease-linear duration-300"
+            x-transition:enter-start="opacity-0"
+            x-transition:enter-end="opacity-100"
+            x-transition:leave="transition-opacity ease-linear duration-300"
+            x-transition:leave-start="opacity-100"
+            x-transition:leave-end="opacity-0"
+            class="fixed inset-0 bg-slate-900/50 z-40 lg:hidden" style="display: none;">
+        </div>
+
+        {{-- SIDEBAR (Bisa slide-out di mobile, dan sembunyi pakai margin di desktop) --}}
         <aside
-            class="w-72 bg-white dark:bg-slate-900 border-r border-gray-100 dark:border-slate-800 flex-shrink-0 flex flex-col shadow-[4px_0_24px_rgba(0,0,0,0.02)] z-20 relative">
-            <div class="p-8">
+            :class="sidebarOpen ? 'translate-x-0 lg:ml-0' : '-translate-x-full lg:translate-x-0 lg:-ml-72'"
+            class="fixed inset-y-0 left-0 z-50 w-72 bg-white dark:bg-slate-900 border-r border-gray-100 dark:border-slate-800 flex-shrink-0 flex flex-col shadow-[4px_0_24px_rgba(0,0,0,0.02)] transition-[transform,margin] duration-300 ease-in-out lg:static">
+            
+            <div class="p-8 flex items-center justify-between">
                 <div class="flex items-center gap-3">
-                    <div
-                        class="bg-gradient-to-br from-green-600 to-green-700 p-2.5 rounded-xl shadow-lg shadow-green-100 dark:shadow-none">
+                    <div class="bg-gradient-to-br from-green-600 to-green-700 p-2.5 rounded-xl shadow-lg shadow-green-100 dark:shadow-none">
                         <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
                                 d="M12 3v19M5 8h14M5 16h14"></path>
                         </svg>
                     </div>
                     <div class="flex flex-col">
-                        <span
-                            class="font-black text-2xl tracking-tighter text-slate-800 dark:text-white leading-none">AGA</span>
+                        <span class="font-black text-2xl tracking-tighter text-slate-800 dark:text-white leading-none">AGA</span>
                         <span class="text-[10px] font-bold text-green-600 tracking-[0.1em] uppercase">Asisten Generatif
                             Agrikultur</span>
                     </div>
                 </div>
+                <!-- Tombol Close (X) di Mobile -->
+                <button @click="closeSidebar()" class="lg:hidden p-2 text-slate-400 hover:text-slate-600 dark:hover:text-white">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
             </div>
 
             <nav class="flex-1 px-6 space-y-1.5 py-4 overflow-y-auto">
-                <p
-                    class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] px-4 mb-2">
+                <p class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] px-4 mb-2">
                     Beranda</p>
                 <a href="/dashboard"
                     class="flex items-center gap-3 px-4 py-3.5 rounded-2xl transition-all font-medium group {{ request()->is('dashboard') || request()->is('/') ? 'bg-green-50 dark:bg-green-500/10 text-green-700 dark:text-green-400 font-bold border-r-4 border-green-600' : 'text-slate-500 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-800/50' }}">
@@ -87,8 +103,7 @@
                     Beranda
                 </a>
 
-                <p
-                    class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] px-4 mt-6 mb-2">
+                <p class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] px-4 mt-6 mb-2">
                     Klasifikasi</p>
                 <a href="/disease"
                     class="flex items-center gap-3 px-4 py-3.5 rounded-2xl transition-all font-medium group {{ request()->is('disease') ? 'bg-green-50 dark:bg-green-500/10 text-green-700 dark:text-green-400 font-bold border-r-4 border-green-600' : 'text-slate-500 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-800/50' }}">
@@ -101,8 +116,7 @@
                     Penyakit Tanaman
                 </a>
 
-                <p
-                    class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] px-4 mt-6 mb-2">
+                <p class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] px-4 mt-6 mb-2">
                     Asisten AI</p>
                 <a href="/chatbot"
                     class="flex items-center gap-3 px-4 py-3.5 rounded-2xl transition-all font-medium group {{ request()->is('chatbot') ? 'bg-green-50 dark:bg-green-500/10 text-green-700 dark:text-green-400 font-bold border-r-4 border-green-600' : 'text-slate-500 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-800/50' }}">
@@ -115,10 +129,7 @@
                     Chatbot Tanya
                 </a>
 
-
-                {{-- REPORTS & SETTINGS DIKEMBALIKAN --}}
-                <p
-                    class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] px-4 mt-6 mb-2">
+                <p class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] px-4 mt-6 mb-2">
                     Kelola</p>
                 <a href="/lahan"
                     class="flex items-center gap-3 px-4 py-3.5 rounded-2xl transition-all font-medium group {{ request()->is('lahan*') ? 'bg-green-50 dark:bg-green-500/10 text-green-700 dark:text-green-400 font-bold border-r-4 border-green-600' : 'text-slate-500 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-800/50' }}">
@@ -210,7 +221,7 @@
 
                     <div
                         class="px-4 py-3 border-b border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50">
-                        <p class="text-xs font-bold text-slate-800 dark:text-white">samuel@agrisystem.com</p>
+                        <p class="text-xs font-bold text-slate-800 dark:text-white">{{ auth()->user()->email ?? 'guest@mail.com' }}</p>
                     </div>
                     <a href="#"
                         class="flex items-center gap-2 px-4 py-3 text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
@@ -251,7 +262,7 @@
                     class="w-full flex items-center gap-3 bg-slate-50 dark:bg-slate-800/50 hover:bg-slate-100 dark:hover:bg-slate-800 p-3 rounded-2xl border border-slate-100 dark:border-slate-800 hover:ring-2 hover:ring-green-500/20 transition-all text-left outline-none">
                     <div
                         class="w-10 h-10 rounded-full bg-gradient-to-tr from-green-500 to-green-700 flex items-center justify-center text-white font-bold text-xs border-2 border-white dark:border-slate-700 flex-shrink-0">
-                        SA</div>
+                        {{ strtoupper(substr(auth()->user()->name ?? 'G', 0, 2)) }}</div>
                     <div class="flex flex-col overflow-hidden flex-1">
                         <span
                             class="text-xs font-bold text-slate-800 dark:text-slate-200 truncate">{{ auth()->user()->name ?? 'Guest' }}</span>
@@ -271,8 +282,16 @@
         {{-- MAIN CONTENT AREA --}}
         <div class="flex-1 flex flex-col min-w-0 overflow-hidden">
             <header
-                class="h-20 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-gray-100 dark:border-slate-800 flex items-center justify-between px-8 z-10 flex-shrink-0">
+                class="h-20 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-gray-100 dark:border-slate-800 flex items-center justify-between px-6 md:px-8 z-10 flex-shrink-0">
                 <div class="flex items-center gap-4">
+                    
+                    {{-- TOMBOL BURGER UNTUK MOBILE & DESKTOP --}}
+                    <button @click="toggleSidebar()" class="p-2 -ml-2 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-colors outline-none">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                        </svg>
+                    </button>
+
                     <h2
                         class="text-sm font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest hidden md:block">
                         Sistem / <span
@@ -280,7 +299,7 @@
                     </h2>
                 </div>
 
-                <div class="flex items-center gap-4">
+                <div class="flex items-center gap-2 md:gap-4">
 
                     {{-- SEARCH BAR INTERAKTIF --}}
                     <div class="relative hidden sm:block">
@@ -392,6 +411,7 @@
             </main>
         </div>
     </div>
+    
     {{-- SCRIPT ALPINE CSP-COMPLIANT --}}
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
@@ -401,6 +421,7 @@
                 profileOpen: false,
                 searchOpen: false,
                 searchQuery: '',
+                sidebarOpen: true, // Set default true agar langsung terbuka di desktop awal
 
                 // Data pencarian untuk semua halaman, sensor, dan metrik
                 searchItems: [
@@ -680,6 +701,13 @@
                 clearSearch() {
                     this.searchQuery = '';
                     this.$refs.searchInput.focus();
+                },
+                // --- FUNGSI UNTUK MOBILE SIDEBAR ---
+                toggleSidebar() {
+                    this.sidebarOpen = !this.sidebarOpen;
+                },
+                closeSidebar() {
+                    this.sidebarOpen = false;
                 }
             }));
         });
