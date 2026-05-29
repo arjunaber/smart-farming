@@ -160,6 +160,18 @@
                     </svg>
                     Logbook
                 </a>
+               {{-- MENU KEUANGAN: HANYA UNTUK PETANI --}}
+ 
+                    <a href="/keuangan"
+                        class="flex items-center gap-3 px-4 py-3.5 rounded-2xl transition-all font-medium group {{ request()->is('keuangan*') ? 'bg-green-50 dark:bg-green-500/10 text-green-700 dark:text-green-400 font-bold border-r-4 border-green-600' : 'text-slate-500 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-800/50' }}">
+                        <svg class="w-5 h-5 {{ request()->is('keuangan*') ? '' : 'group-hover:text-green-600 transition-colors' }}"
+                            fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z">
+                            </path>
+                        </svg>
+                        Keuangan
+                    </a>
                 @if (auth()->check() && Auth::user()->role === 'super_admin')
                     <a href="/admin"
                         class="flex items-center gap-3 px-4 py-3.5 rounded-2xl transition-all font-medium group {{ request()->is('admin*') ? 'bg-purple-50 dark:bg-purple-500/10 text-purple-700 dark:text-purple-400 font-bold border-r-4 border-purple-600' : 'text-slate-500 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-800/50' }}">
@@ -191,6 +203,7 @@
                     </svg>
                     Laporan
                 </a>
+                @if (auth()->check() && Auth::user()->role === 'super_admin')
                 <a href="/settings"
                     class="flex items-center gap-3 px-4 py-3.5 rounded-2xl transition-all font-medium group {{ request()->is('settings') ? 'bg-green-50 dark:bg-green-500/10 text-green-700 dark:text-green-400 font-bold border-r-4 border-green-600' : 'text-slate-500 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-800/50' }}">
                     <svg class="w-5 h-5 {{ request()->is('settings') ? '' : 'group-hover:text-green-600 transition-colors' }}"
@@ -203,6 +216,7 @@
                     </svg>
                     Pengaturan
                 </a>
+                @endif
             </nav>
 
             {{-- PROFILE ADMINISTRATOR INTERAKTIF --}}
