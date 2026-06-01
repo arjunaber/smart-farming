@@ -8,6 +8,7 @@ use App\Models\EnvironmentalMetric;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Str;
 
 class ChatbotController extends Controller
 {
@@ -18,77 +19,178 @@ class ChatbotController extends Controller
 
         $selectedLahanId = $request->get('lahan_id') ?? ($lahanList->first()->id ?? null);
 
-        // Ambil riwayat percakapan chat berdasarkan lahan yang dipilih
-        $chats = ChatbotHistory::where('user_id', Auth::id())
-            ->where('lahan_id', $selectedLahanId)
+        return view('chatbot', compact('lahanList', 'selectedLahanId'));
+    }
+
+    /**
+     * Ambil daftar sesi history chat, dikelompokkan berdasarkan tanggal.
+     * Dipanggil via AJAX dari sidebar.
+     */
+    public function history(Request $request)
+    {
+        $userId = Auth::id();
+
+        // Ambil semua sesi unik milik user, sorted by latest
+        $sessions = ChatbotHistory::where('user_id', $userId)
+            ->select('session_id', 'lahan_id', 'question', 'created_at')
+            ->orderBy('created_at', 'desc')
+            ->get()
+            ->unique('session_id') // Ambil 1 record per sesi (yang pertama = pertanyaan pertama)
+            ->values();
+
+        $today = now()->startOfDay();
+        $weekAgo = now()->subDays(7)->startOfDay();
+
+        $grouped = [
+            'today'    => [],
+            'pastWeek' => [],
+            'older'    => [],
+        ];
+
+        foreach ($sessions as $session) {
+            $createdAt = $session->created_at;
+            $title = Str::limit($session->question, 45);
+
+            $entry = [
+                'id'        => $session->session_id,
+                'title'     => $title,
+                'lahan_id'  => $session->lahan_id,
+            ];
+
+            if ($createdAt->gte($today)) {
+                $grouped['today'][] = $entry;
+            } elseif ($createdAt->gte($weekAgo)) {
+                $grouped['pastWeek'][] = $entry;
+            } else {
+                $grouped['older'][] = $entry;
+            }
+        }
+
+        return response()->json([
+            'status' => 'success',
+            'data'   => $grouped,
+        ]);
+    }
+
+    /**
+     * Ambil semua pesan dalam satu sesi chat berdasarkan session_id.
+     */
+    public function historyDetail(Request $request, $sessionId)
+    {
+        $records = ChatbotHistory::where('user_id', Auth::id())
+            ->where('session_id', $sessionId)
             ->orderBy('created_at', 'asc')
             ->get();
 
-        return view('chatbot.index', compact('lahanList', 'chats', 'selectedLahanId'));
+        if ($records->isEmpty()) {
+            return response()->json(['status' => 'error', 'message' => 'Sesi tidak ditemukan.'], 404);
+        }
+
+        // Ubah setiap record menjadi pasangan user + bot message
+        $messages = [];
+        foreach ($records as $record) {
+            $messages[] = [
+                'role' => 'user',
+                'text' => $record->question,
+                'time' => $record->created_at->format('H:i'),
+            ];
+            $messages[] = [
+                'role' => 'bot',
+                'text' => $record->answer,
+                'time' => $record->created_at->format('H:i'),
+            ];
+        }
+
+        return response()->json([
+            'status' => 'success',
+            'data'   => $messages,
+        ]);
     }
 
+    /**
+     * Proses pertanyaan baru dan simpan ke database.
+     */
     public function ask(Request $request)
     {
         $request->validate([
-            'lahan_id' => 'required|exists:lahan,id',
-            'question' => 'required|string'
+            'lahan_id'   => 'required|exists:lahan,id',
+            'question'   => 'required|string',
+            'session_id' => 'nullable|string', // Boleh nullable, nanti di-generate kalau null
         ]);
 
         $lahan = Lahan::find($request->lahan_id);
 
-        // 1. Ambil metrik IoT teranyar di lahan ini sebagai injeksi context kecerdasan buatan (LLM)
+        // Gunakan session_id dari request, atau buat baru jika belum ada
+        $sessionId = $request->session_id ?: (string) Str::uuid();
+
+        // 1. Ambil metrik IoT terbaru sebagai konteks
         $latestMetric = EnvironmentalMetric::whereHas('iotDevice', function ($q) use ($lahan) {
             $q->where('lahan_id', $lahan->id);
         })->latest('recorded_at')->first();
 
-        // 2. Susun prompt agar respons LLM akurat dan tidak melantur keluar konteks
+        // 2. Ambil riwayat percakapan dalam sesi ini untuk konteks multi-turn
+        $conversationHistory = ChatbotHistory::where('session_id', $sessionId)
+            ->orderBy('created_at', 'asc')
+            ->get();
+
+        // 3. Susun prompt dengan konteks data sensor + riwayat percakapan
         $contextPrompt = "Anda adalah sistem pakar AI pertanian pintar AGA Smart Farming.\n";
         $contextPrompt .= "Konteks Lahan Saat Ini:\n";
         $contextPrompt .= "- Nama Lahan: {$lahan->nama_lahan}\n";
 
         if ($latestMetric) {
-            $contextPrompt .= "- Suhu Udara Perangkat: {$latestMetric->temperature}°C\n";
-            $contextPrompt .= "- Kelembapan Udara Perangkat: {$latestMetric->humidity}%\n";
-            $contextPrompt .= "- Kelembapan Tanah: {$latestMetric->ph}%\n";
+            $contextPrompt .= "- Suhu Udara: {$latestMetric->temperature}°C\n";
+            $contextPrompt .= "- Kelembapan Udara: {$latestMetric->humidity}%\n";
+            $contextPrompt .= "- Kelembapan Tanah (pH sensor): {$latestMetric->ph}%\n";
             $contextPrompt .= "- Intensitas Cahaya: {$latestMetric->light_intensity} lux\n";
         } else {
-            $contextPrompt .= "- Data metrik sensor IoT lapangan belum tersedia.\n";
+            $contextPrompt .= "- Data sensor IoT belum tersedia.\n";
         }
 
-        $contextPrompt .= "\nPertanyaan Petani: " . $request->question;
+        // Tambahkan riwayat percakapan jika ada
+        if ($conversationHistory->isNotEmpty()) {
+            $contextPrompt .= "\nRiwayat percakapan sebelumnya dalam sesi ini:\n";
+            foreach ($conversationHistory as $chat) {
+                $contextPrompt .= "Petani: {$chat->question}\n";
+                $contextPrompt .= "AGA AI: {$chat->answer}\n";
+            }
+        }
+
+        $contextPrompt .= "\nPertanyaan Petani Sekarang: " . $request->question;
 
         try {
-            // 3. Tembak ke API LLM (Contoh menggunakan Gemini API / OpenAI / Lokal Ollama)
-            // Silakan sesuaikan URL endpoint dan API_KEY milik kelompokmu di file .env
-            $response = Http::withHeaders([
-                'Authorization' => 'Bearer ' . env('LLM_API_KEY'),
-                'Content-Type'  => 'application/json',
-            ])->post(env('LLM_API_ENDPOINT', 'https://api.openai.com/v1/chat/completions'), [
-                'model' => 'gpt-4o-mini', // atau gemini-1.5-flash sesuai integrasi tim
-                'messages' => [
-                    ['role' => 'user', 'content' => $contextPrompt]
-                ],
-                'temperature' => 0.5,
+            $endpoint = 'https://sq74g607-8000.asse.devtunnels.ms/recommend';
+
+            $response = Http::timeout(30)->asForm()->post($endpoint, [
+                'prompt' => $contextPrompt,
             ]);
 
             if ($response->successful()) {
                 $result = $response->json();
-                $answer = $result['choices'][0]['message']['content'] ?? 'Maaf, sistem tidak dapat memproses jawaban.';
+                $answer = $result['recommendationn'] ?? $result['recommendation'] ?? 'Maaf, model tidak memberikan jawaban.';
             } else {
-                $answer = "Maaf, sistem AI sedang sibuk. Silakan coba beberapa saat lagi.";
+                $answer = "Maaf, sistem AI sedang sibuk. (Status: " . $response->status() . ")";
             }
         } catch (\Exception $e) {
-            $answer = "Terjadi kegagalan koneksi ke server kecerdasan buatan: " . $e->getMessage();
+            $answer = "Terjadi kegagalan koneksi ke server AI: " . $e->getMessage();
         }
 
-        // 4. Simpan hasilnya ke database agar riwayat chat tidak hilang saat direfresh
+        // 4. Simpan ke database
         $chatRecord = ChatbotHistory::create([
-            'user_id'  => Auth::id(),
-            'lahan_id' => $lahan->id,
-            'question' => $request->question,
-            'answer'   => $answer
+            'user_id'    => Auth::id(),
+            'lahan_id'   => $lahan->id,
+            'session_id' => $sessionId,
+            'question'   => $request->question,
+            'answer'     => $answer,
         ]);
 
-        return redirect()->back()->with('success', 'Pesan terkirim.');
+        return response()->json([
+            'status' => 'success',
+            'data'   => [
+                'answer'     => $chatRecord->answer,
+                'session_id' => $chatRecord->session_id,
+                'time'       => $chatRecord->created_at->format('H:i'),
+            ],
+        ]);
     }
 }

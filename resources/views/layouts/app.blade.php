@@ -53,44 +53,45 @@
 
         {{-- OVERLAY GELAP (Hanya aktif di mobile/layar kecil saat sidebar terbuka) --}}
         <div x-show="sidebarOpen" @click="closeSidebar()"
-            x-transition:enter="transition-opacity ease-linear duration-300"
-            x-transition:enter-start="opacity-0"
-            x-transition:enter-end="opacity-100"
-            x-transition:leave="transition-opacity ease-linear duration-300"
-            x-transition:leave-start="opacity-100"
-            x-transition:leave-end="opacity-0"
+            x-transition:enter="transition-opacity ease-linear duration-300" x-transition:enter-start="opacity-0"
+            x-transition:enter-end="opacity-100" x-transition:leave="transition-opacity ease-linear duration-300"
+            x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
             class="fixed inset-0 bg-slate-900/50 z-40 lg:hidden" style="display: none;">
         </div>
 
         {{-- SIDEBAR (Bisa slide-out di mobile, dan sembunyi pakai margin di desktop) --}}
-        <aside
-            :class="sidebarOpen ? 'translate-x-0 lg:ml-0' : '-translate-x-full lg:translate-x-0 lg:-ml-72'"
+        <aside :class="sidebarOpen ? 'translate-x-0 lg:ml-0' : '-translate-x-full lg:translate-x-0 lg:-ml-72'"
             class="fixed inset-y-0 left-0 z-50 w-72 bg-white dark:bg-slate-900 border-r border-gray-100 dark:border-slate-800 flex-shrink-0 flex flex-col shadow-[4px_0_24px_rgba(0,0,0,0.02)] transition-[transform,margin] duration-300 ease-in-out lg:static">
-            
+
             <div class="p-8 flex items-center justify-between">
                 <div class="flex items-center gap-3">
-                    <div class="bg-gradient-to-br from-green-600 to-green-700 p-2.5 rounded-xl shadow-lg shadow-green-100 dark:shadow-none">
+                    <div
+                        class="bg-gradient-to-br from-green-600 to-green-700 p-2.5 rounded-xl shadow-lg shadow-green-100 dark:shadow-none">
                         <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
                                 d="M12 3v19M5 8h14M5 16h14"></path>
                         </svg>
                     </div>
                     <div class="flex flex-col">
-                        <span class="font-black text-2xl tracking-tighter text-slate-800 dark:text-white leading-none">AGA</span>
+                        <span
+                            class="font-black text-2xl tracking-tighter text-slate-800 dark:text-white leading-none">AGA</span>
                         <span class="text-[10px] font-bold text-green-600 tracking-[0.1em] uppercase">Asisten Generatif
                             Agrikultur</span>
                     </div>
                 </div>
                 <!-- Tombol Close (X) di Mobile -->
-                <button @click="closeSidebar()" class="lg:hidden p-2 text-slate-400 hover:text-slate-600 dark:hover:text-white">
+                <button @click="closeSidebar()"
+                    class="lg:hidden p-2 text-slate-400 hover:text-slate-600 dark:hover:text-white">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12">
+                        </path>
                     </svg>
                 </button>
             </div>
 
             <nav class="flex-1 px-6 space-y-1.5 py-4 overflow-y-auto">
-                <p class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] px-4 mb-2">
+                <p
+                    class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] px-4 mb-2">
                     Beranda</p>
                 <a href="/dashboard"
                     class="flex items-center gap-3 px-4 py-3.5 rounded-2xl transition-all font-medium group {{ request()->is('dashboard') || request()->is('/') ? 'bg-green-50 dark:bg-green-500/10 text-green-700 dark:text-green-400 font-bold border-r-4 border-green-600' : 'text-slate-500 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-800/50' }}">
@@ -103,7 +104,8 @@
                     Beranda
                 </a>
 
-                <p class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] px-4 mt-6 mb-2">
+                <p
+                    class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] px-4 mt-6 mb-2">
                     Klasifikasi</p>
                 <a href="/disease"
                     class="flex items-center gap-3 px-4 py-3.5 rounded-2xl transition-all font-medium group {{ request()->is('disease') ? 'bg-green-50 dark:bg-green-500/10 text-green-700 dark:text-green-400 font-bold border-r-4 border-green-600' : 'text-slate-500 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-800/50' }}">
@@ -116,7 +118,8 @@
                     Penyakit Tanaman
                 </a>
 
-                <p class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] px-4 mt-6 mb-2">
+                <p
+                    class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] px-4 mt-6 mb-2">
                     Asisten AI</p>
                 <a href="/chatbot"
                     class="flex items-center gap-3 px-4 py-3.5 rounded-2xl transition-all font-medium group {{ request()->is('chatbot') ? 'bg-green-50 dark:bg-green-500/10 text-green-700 dark:text-green-400 font-bold border-r-4 border-green-600' : 'text-slate-500 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-800/50' }}">
@@ -129,7 +132,8 @@
                     Chatbot Tanya
                 </a>
 
-                <p class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] px-4 mt-6 mb-2">
+                <p
+                    class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] px-4 mt-6 mb-2">
                     Kelola</p>
                 <a href="/lahan"
                     class="flex items-center gap-3 px-4 py-3.5 rounded-2xl transition-all font-medium group {{ request()->is('lahan*') ? 'bg-green-50 dark:bg-green-500/10 text-green-700 dark:text-green-400 font-bold border-r-4 border-green-600' : 'text-slate-500 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-800/50' }}">
@@ -151,27 +155,19 @@
                     </svg>
                     Siklus Tanam
                 </a>
-                <a href="/logbook"
-                    class="flex items-center gap-3 px-4 py-3.5 rounded-2xl transition-all font-medium group {{ request()->is('logbook*') ? 'bg-green-50 dark:bg-green-500/10 text-green-700 dark:text-green-400 font-bold border-r-4 border-green-600' : 'text-slate-500 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-800/50' }}">
-                    <svg class="w-5 h-5 {{ request()->is('logbook*') ? '' : 'group-hover:text-green-600 transition-colors' }}"
+
+                {{-- MENU KEUANGAN: HANYA UNTUK PETANI --}}
+
+                <a href="/keuangan"
+                    class="flex items-center gap-3 px-4 py-3.5 rounded-2xl transition-all font-medium group {{ request()->is('keuangan*') ? 'bg-green-50 dark:bg-green-500/10 text-green-700 dark:text-green-400 font-bold border-r-4 border-green-600' : 'text-slate-500 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-800/50' }}">
+                    <svg class="w-5 h-5 {{ request()->is('keuangan*') ? '' : 'group-hover:text-green-600 transition-colors' }}"
                         fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z">
+                        </path>
                     </svg>
-                    Logbook
+                    Keuangan
                 </a>
-               {{-- MENU KEUANGAN: HANYA UNTUK PETANI --}}
- 
-                    <a href="/keuangan"
-                        class="flex items-center gap-3 px-4 py-3.5 rounded-2xl transition-all font-medium group {{ request()->is('keuangan*') ? 'bg-green-50 dark:bg-green-500/10 text-green-700 dark:text-green-400 font-bold border-r-4 border-green-600' : 'text-slate-500 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-800/50' }}">
-                        <svg class="w-5 h-5 {{ request()->is('keuangan*') ? '' : 'group-hover:text-green-600 transition-colors' }}"
-                            fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
-                                d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z">
-                            </path>
-                        </svg>
-                        Keuangan
-                    </a>
                 @if (auth()->check() && Auth::user()->role === 'super_admin')
                     <a href="/admin"
                         class="flex items-center gap-3 px-4 py-3.5 rounded-2xl transition-all font-medium group {{ request()->is('admin*') ? 'bg-purple-50 dark:bg-purple-500/10 text-purple-700 dark:text-purple-400 font-bold border-r-4 border-purple-600' : 'text-slate-500 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-800/50' }}">
@@ -187,8 +183,11 @@
                 @if (auth()->check() && Auth::user()->role === 'super_admin')
                     <a href="/rag"
                         class="flex items-center gap-3 px-4 py-3.5 rounded-2xl transition-all font-medium group {{ request()->is('rag*') ? 'bg-indigo-50 dark:bg-indigo-500/10 text-indigo-700 dark:text-indigo-400 font-bold border-r-4 border-indigo-600' : 'text-slate-500 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-800/50' }}">
-                        <svg class="w-5 h-5 {{ request()->is('rag*') ? '' : 'group-hover:text-indigo-600 transition-colors' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                        <svg class="w-5 h-5 {{ request()->is('rag*') ? '' : 'group-hover:text-indigo-600 transition-colors' }}"
+                            fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
+                            </path>
                         </svg>
                         Dokumen RAG (AI)
                     </a>
@@ -203,19 +202,19 @@
                     </svg>
                     Laporan
                 </a>
-                @if (auth()->check() && Auth::user()->role === 'super_admin')
-                <a href="/settings"
-                    class="flex items-center gap-3 px-4 py-3.5 rounded-2xl transition-all font-medium group {{ request()->is('settings') ? 'bg-green-50 dark:bg-green-500/10 text-green-700 dark:text-green-400 font-bold border-r-4 border-green-600' : 'text-slate-500 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-800/50' }}">
-                    <svg class="w-5 h-5 {{ request()->is('settings') ? '' : 'group-hover:text-green-600 transition-colors' }}"
-                        fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z">
-                        </path>
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                    </svg>
-                    Pengaturan
-                </a>
+                @if (Auth::check() && Auth::user()->role === 'super_admin')
+                    <a href="/settings"
+                        class="flex items-center gap-3 px-4 py-3.5 rounded-2xl transition-all font-medium group {{ request()->is('settings') ? 'bg-green-50 dark:bg-green-500/10 text-green-700 dark:text-green-400 font-bold border-r-4 border-green-600' : 'text-slate-500 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-800/50' }}">
+                        <svg class="w-5 h-5 {{ request()->is('settings') ? '' : 'group-hover:text-green-600 transition-colors' }}"
+                            fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z">
+                            </path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                        </svg>
+                        Pengaturan
+                    </a>
                 @endif
             </nav>
 
@@ -233,10 +232,15 @@
                     class="absolute bottom-full left-6 right-6 mb-3 bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 rounded-2xl shadow-xl overflow-hidden z-50"
                     style="display: none;">
 
+                    {{-- Info Email User --}}
                     <div
                         class="px-4 py-3 border-b border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50">
-                        <p class="text-xs font-bold text-slate-800 dark:text-white">{{ auth()->user()->email ?? 'guest@mail.com' }}</p>
+                        <p class="text-xs font-bold text-slate-800 dark:text-white">
+                            {{ auth()->user()->email ?? 'guest@mail.com' }}
+                        </p>
                     </div>
+
+                    {{-- Link Profil Saya (Bisa dilihat semua role) --}}
                     <a href="#"
                         class="flex items-center gap-2 px-4 py-3 text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -245,18 +249,24 @@
                         </svg>
                         Profil Saya
                     </a>
-                    <a href="/settings"
-                        class="flex items-center gap-2 px-4 py-3 text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z">
-                            </path>
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                        </svg>
-                        Pengaturan
-                    </a>
+
+                    @if (auth()->check() && auth()->user()->role === 'super_admin')
+                        <a href="/settings"
+                            class="flex items-center gap-2 px-4 py-3 text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z">
+                                </path>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                            </svg>
+                            Pengaturan
+                        </a>
+                    @endif
+
                     <div class="h-px bg-slate-100 dark:bg-slate-700"></div>
+
+                    {{-- Tombol Kelola Logout --}}
                     <form method="POST" action="{{ route('logout') }}">
                         @csrf
                         <button type="submit"
@@ -298,11 +308,13 @@
             <header
                 class="h-20 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-gray-100 dark:border-slate-800 flex items-center justify-between px-6 md:px-8 z-10 flex-shrink-0">
                 <div class="flex items-center gap-4">
-                    
+
                     {{-- TOMBOL BURGER UNTUK MOBILE & DESKTOP --}}
-                    <button @click="toggleSidebar()" class="p-2 -ml-2 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-colors outline-none">
+                    <button @click="toggleSidebar()"
+                        class="p-2 -ml-2 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-colors outline-none">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M4 6h16M4 12h16M4 18h16"></path>
                         </svg>
                     </button>
 
@@ -425,7 +437,7 @@
             </main>
         </div>
     </div>
-    
+
     {{-- SCRIPT ALPINE CSP-COMPLIANT --}}
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>

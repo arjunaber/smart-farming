@@ -5,30 +5,26 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class ChatbotHistory extends Model
+class Keuangan extends Model
 {
     use HasFactory;
 
-    protected $table = 'chatbot_histories';
+    // Menentukan nama tabel kustom Anda secara eksplisit
+    protected $table = 'keuangan';
 
     protected $fillable = [
-        'user_id',
         'lahan_id',
-        'session_id',
-        'question',
-        'answer',
+        'kategori',
+        'nominal',
+        'tanggal',
+        'keterangan'
     ];
 
     protected $casts = [
-        'created_at' => 'datetime',
-        'updated_at' => 'datetime',
+        'tanggal' => 'date',
     ];
 
-    public function user()
-    {
-        return $this->belongsTo(User::class, 'user_id');
-    }
-
+    // Relasi balik: Catatan keuangan ini milik sebuah Lahan
     public function lahan()
     {
         return $this->belongsTo(Lahan::class, 'lahan_id');
