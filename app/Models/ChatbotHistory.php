@@ -14,8 +14,14 @@ class ChatbotHistory extends Model
     protected $fillable = [
         'user_id',
         'lahan_id',
+        'session_id',
         'question',
         'answer',
+    ];
+
+    protected $casts = [
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
     ];
 
     public function user()

@@ -8,8 +8,9 @@ use App\Http\Controllers\AdminController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\SensorController;
-use App\Http\Controllers\SiklusTanamController; 
-use App\Http\Controllers\KeuanganController; // 1. Controller Sudah Di-import
+use App\Http\Controllers\SiklusTanamController;
+use App\Http\Controllers\KeuanganController;
+use App\Http\Controllers\ChatbotController;
 
 Route::get('/', [LoginController::class, 'showLogin'])->name('login');
 Route::post('/', [LoginController::class, 'login']);
@@ -41,7 +42,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/rag', function () {
             return view('rag.index'); // Pastikan file blade-nya ada di resources/views/rag/index.blade.php
         })->name('rag.index');
-        
+
         // Route dummy untuk simulasi upload form (akan diurus BE nanti)
         Route::post('/rag/upload', function () {
             return back()->with('success', 'File RAG berhasil diproses (Simulasi UI)');
@@ -53,9 +54,12 @@ Route::middleware('auth')->group(function () {
         return view('disease');
     })->name('disease');
 
-    Route::get('/chatbot', function () {
-        return view('chatbot');
-    })->name('chatbot');
+    Route::prefix('chatbot')->middleware('auth')->group(function () {
+        Route::get('/', [ChatbotController::class, 'index'])->name('chatbot.index');
+        Route::get('/history', [ChatbotController::class, 'history'])->name('chatbot.history');
+        Route::get('/history/{sessionId}', [ChatbotController::class, 'historyDetail'])->name('chatbot.history.detail');
+        Route::post('/ask', [ChatbotController::class, 'ask'])->name('chatbot.ask');
+    });
 
     Route::get('/reports', function () {
         return view('reports');

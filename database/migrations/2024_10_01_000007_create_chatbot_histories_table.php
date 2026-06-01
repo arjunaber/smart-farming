@@ -12,6 +12,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('user_id')->constrained('users')->cascadeOnDelete();
             $table->foreignId('lahan_id')->nullable()->constrained('lahan')->nullOnDelete();
+            $table->string('session_id')->nullable()->index();
             $table->text('question');
             $table->text('answer');
             $table->timestamps();
