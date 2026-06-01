@@ -151,15 +151,7 @@
                     </svg>
                     Siklus Tanam
                 </a>
-                <a href="/logbook"
-                    class="flex items-center gap-3 px-4 py-3.5 rounded-2xl transition-all font-medium group {{ request()->is('logbook*') ? 'bg-green-50 dark:bg-green-500/10 text-green-700 dark:text-green-400 font-bold border-r-4 border-green-600' : 'text-slate-500 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-800/50' }}">
-                    <svg class="w-5 h-5 {{ request()->is('logbook*') ? '' : 'group-hover:text-green-600 transition-colors' }}"
-                        fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                    </svg>
-                    Logbook
-                </a>
+                
                {{-- MENU KEUANGAN: HANYA UNTUK PETANI --}}
  
                     <a href="/keuangan"
