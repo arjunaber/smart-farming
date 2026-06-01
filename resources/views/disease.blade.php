@@ -9,7 +9,6 @@
         <p class="text-slate-500 dark:text-slate-400 text-sm mt-1">Unggah foto daun tanaman yang terkena penyakit untuk diagnosis Vision AI.</p>
     </div>
 
-    <!-- PANDUAN PENGAMBILAN GAMBAR (Revisi Bu Mifta) -->
     <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-2xl p-6 mb-6">
         <h3 class="text-sm font-bold text-blue-800 dark:text-blue-300 mb-3 flex items-center gap-2">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
@@ -34,7 +33,6 @@
     </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <!-- Upload Area -->
         <div class="bg-white dark:bg-slate-900 rounded-[2.5rem] border border-slate-100 dark:border-slate-800 p-8 shadow-sm flex flex-col">
             <div class="flex justify-between items-center mb-6">
                 <h3 class="text-sm font-bold text-slate-800 dark:text-white uppercase tracking-wider">Input Gambar</h3>
@@ -61,7 +59,6 @@
             <input type="file" id="fileUploader" @change="handleFileUpload" class="hidden" accept="image/*">
         </div>
 
-        <!-- Result Area (Sama seperti Source 4) -->
         <div class="bg-white dark:bg-slate-900 rounded-[2.5rem] border border-slate-100 p-8 flex flex-col justify-center">
             <div x-show="!showResult && !isAnalyzing" class="text-center">
                 <p class="text-slate-400 font-medium">Hasil diagnosis AI akan muncul di sini.</p>
@@ -87,75 +84,277 @@
 
             triggerUpload() { document.getElementById('fileUploader').click(); },
 
-            calculateLaplacianVariance(imageData) {
-                // Simple grayscale Laplacian variance for blur detection
-                const laplacianKernel = [-1, -1, -1, -1, 8, -1, -1, -1, -1];
+            calculateLaplacianVariance(canvas, ctx) {
+                const width = canvas.width;
+                const height = canvas.height;
+                const imageData = ctx.getImageData(0, 0, width, height);
                 const data = imageData.data;
-                const width = imageData.width;
-                const height = imageData.height;
-                let laplacianSum = 0;
-                let validPixels = 0;
 
-                // Sample every 10 pixels for performance
-                for (let y = 1; y < height - 1; y += 10) {
-                    for (let x = 1; x < width - 1; x += 10) {
-                        // Get grayscale value
-                        const idx = (Math.floor(y) * width + Math.floor(x)) * 4;
-                        const gray = 0.299 * data[idx] + 0.587 * data[idx + 1] + 0.114 * data[idx + 2];
+                // Ubah gambar ke format Grayscale terlebih dahulu
+                const grayscale = new Uint8ClampedArray(width * height);
+                for (let i = 0; i < data.length; i += 4) {
+                    grayscale[i / 4] = 0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2];
+                }
 
-                        // Simplified Laplacian (center * 8 - neighbors)
-                        const neighborsSum = Math.abs(gray * 8) - (gray * 8); // Placeholder
-                        laplacianSum += neighborsSum * neighborsSum;
-                        validPixels++;
+                let mean = 0;
+                let laplacianValues = [];
+
+                // Terapkan matriks kernel Laplacian 3x3 untuk mendeteksi tepian
+                for (let y = 1; y < height - 1; y++) {
+                    for (let x = 1; x < width - 1; x++) {
+                        const idx = y * width + x;
+                        const laplacian = grayscale[(y - 1) * width + x] + // Atas
+                                          grayscale[(y + 1) * width + x] + // Bawah
+                                          grayscale[y * width + (x - 1)] + // Kiri
+                                          grayscale[y * width + (x + 1)] - // Kanan
+                                          4 * grayscale[idx];              // Tengah
+
+                        laplacianValues.push(laplacian);
+                        mean += laplacian;
                     }
                 }
 
-                return validPixels > 0 ? laplacianSum / validPixels : 0;
+                if (laplacianValues.length === 0) return 0;
+                mean /= laplacianValues.length;
+
+                // Hitung nilai Variance dari hasil filter Laplacian
+                let variance = 0;
+                for (let i = 0; i < laplacianValues.length; i++) {
+                    variance += Math.pow(laplacianValues[i] - mean, 2);
+                }
+                
+                return variance / laplacianValues.length;
             },
 
             handleFileUpload(event) {
                 const file = event.target.files[0];
                 if (file) {
-                    // Validasi Kualitas/Ukuran Gambar (Revisi Bu Mifta)
-                    // Validasi Kualitas Gambar dengan Canvas Blur Detection (Revisi Bu Mifta)
                     const canvas = document.createElement('canvas');
                     const ctx = canvas.getContext('2d');
                     const img = new Image();
+                    
                     img.onload = () => {
-                        canvas.width = img.width;
-                        canvas.height = img.height;
-                        ctx.drawImage(img, 0, 0);
-                        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-                        const laplacianVariance = this.calculateLaplacianVariance(imageData);
+                        // PENTING: Perkecil resolusi (resize) di background agar browser tidak hang 
+                        const MAX_DIMENSION = 350; 
+                        let scale = 1;
+                        if (img.width > MAX_DIMENSION || img.height > MAX_DIMENSION) {
+                            scale = Math.min(MAX_DIMENSION / img.width, MAX_DIMENSION / img.height);
+                        }
                         
-                        if (laplacianVariance < 100) { // Threshold blur
+                        canvas.width = img.width * scale;
+                        canvas.height = img.height * scale;
+                        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                        
+                        // Eksekusi fungsi deteksi buram
+                        const laplacianVariance = this.calculateLaplacianVariance(canvas, ctx);
+                        
+                        // Nilai ambang batas (threshold) buram. 
+                        if (laplacianVariance < 50) { 
                             Swal.fire({
                                 icon: 'warning',
                                 title: 'Gambar Buram!',
-                                text: 'Gambar terlalu buram dan tidak dapat dianalisis. Pastikan kamera fokus dan pencahayaan cukup. Coba lagi.',
+                                text: 'Gambar terlalu buram (fokus tidak jelas). Silakan ambil foto ulang agar AI bisa mendiagnosis dengan akurat.',
                                 confirmButtonColor: '#16a34a',
                             });
+                            
+                            // Reset input agar pengguna bisa upload file lain
+                            document.getElementById('fileUploader').value = '';
                             return;
                         }
 
-                        // Proceed if sharp
+                        // Jika gambar tajam dan lolos deteksi
                         this.hasImage = true;
+                        this.showResult = false;
                         this.imagePreview = URL.createObjectURL(file);
                         this.selectedFile = file;
                     };
                     img.src = URL.createObjectURL(file);
-
-                    this.hasImage = true;
-                    this.showResult = false;
-                    this.imagePreview = URL.createObjectURL(file);
-                    this.selectedFile = file;
                 }
             },
 
-            // Metode analyzeImage dan resetArea disamakan dengan source 4
             async analyzeImage() {
-                /* Logika Fetch LLM Anda seperti di source 4 */
+                if (!this.selectedFile) return;
+
+                // 1. Ubah UI ke mode Loading
+                this.isAnalyzing = true;
+                this.showResult = false;
+
+                try {
+                    // Simulasi delay fetch ke Backend/LLM selama 2 detik
+                    await new Promise(resolve => setTimeout(resolve, 2000));
+                    
+                    // Nanti logika fetch axios/fetch API yang asli dimasukkan ke sini 
+                    // dan meng-update 'this.diseaseResult.disease' serta 'this.$refs.llmExplanation.innerHTML'
+                    
+                    // Simulasi hasil respons:
+                    this.diseaseResult = { disease: 'Blight (Hawar Daun)' };
+                    this.$refs.llmExplanation.innerHTML = `
+                        <p class="mb-2">Berdasarkan analisis citra, daun ini menunjukkan gejala khas penyakit Hawar Daun (Blight).</p>
+                        <ul class="list-disc pl-5 space-y-1 text-xs">
+                            <li><b>Penyebab:</b> Infeksi jamur atau bakteri akibat kelembapan tinggi.</li>
+                            <li><b>Tindakan:</b> Pangkas daun yang terinfeksi dan semprotkan fungisida.</li>
+                        </ul>
+                    `;
+                    
+                    // 2. Tampilkan area hasil
+                    this.showResult = true;
+
+                } catch (error) {
+                    console.error("Error analyzing image:", error);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Gagal Memproses',
+                        text: 'Terjadi kesalahan saat menghubungi server AI.',
+                        confirmButtonColor: '#ef4444',
+                    });
+                } finally {
+                    // 3. Matikan mode loading agar tombol kembali normal
+                    this.isAnalyzing = false;
+                }
             },
+            
+            resetArea() {
+                this.hasImage = false;
+                this.imagePreview = null;
+                this.showResult = false;
+                this.selectedFile = null;
+                document.getElementById('fileUploader').value = '';
+            }
+        }));
+    });
+</script>
+<script>
+    document.addEventListener('alpine:init', () => {
+        Alpine.data('diseaseComponent', () => ({
+            hasImage: false,
+            imagePreview: null,
+            isAnalyzing: false,
+            showResult: false,
+            diseaseResult: { disease: 'Memproses...' },
+            selectedFile: null,
+
+            triggerUpload() { document.getElementById('fileUploader').click(); },
+
+            calculateLaplacianVariance(canvas, ctx) {
+                const width = canvas.width;
+                const height = canvas.height;
+                const imageData = ctx.getImageData(0, 0, width, height);
+                const data = imageData.data;
+
+                const grayscale = new Uint8ClampedArray(width * height);
+                for (let i = 0; i < data.length; i += 4) {
+                    grayscale[i / 4] = 0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2];
+                }
+
+                let mean = 0;
+                let laplacianValues = [];
+
+                for (let y = 1; y < height - 1; y++) {
+                    for (let x = 1; x < width - 1; x++) {
+                        const idx = y * width + x;
+                        const laplacian = 
+                            grayscale[(y - 1) * width + (x - 1)] + grayscale[(y - 1) * width + x] + grayscale[(y - 1) * width + (x + 1)] +
+                            grayscale[y * width + (x - 1)]       +                                  grayscale[y * width + (x + 1)] +
+                            grayscale[(y + 1) * width + (x - 1)] + grayscale[(y + 1) * width + x] + grayscale[(y + 1) * width + (x + 1)] - 
+                            (8 * grayscale[idx]);
+
+                        laplacianValues.push(laplacian);
+                        mean += laplacian;
+                    }
+                }
+
+                if (laplacianValues.length === 0) return 0;
+                mean /= laplacianValues.length;
+
+                let variance = 0;
+                for (let i = 0; i < laplacianValues.length; i++) {
+                    variance += Math.pow(laplacianValues[i] - mean, 2);
+                }
+                
+                return variance / laplacianValues.length;
+            },
+
+            handleFileUpload(event) {
+                const file = event.target.files[0];
+                if (file) {
+                    const canvas = document.createElement('canvas');
+                    const ctx = canvas.getContext('2d');
+                    const img = new Image();
+                    
+                    img.onload = () => {
+                        const MAX_DIMENSION = 400; 
+                        let scale = 1;
+                        if (img.width > MAX_DIMENSION || img.height > MAX_DIMENSION) {
+                            scale = Math.min(MAX_DIMENSION / img.width, MAX_DIMENSION / img.height);
+                        }
+                        
+                        canvas.width = img.width * scale;
+                        canvas.height = img.height * scale;
+                        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                        
+                        const laplacianVariance = this.calculateLaplacianVariance(canvas, ctx);
+                        const finalScore = Math.round(laplacianVariance);
+                        
+                        // KITA NAIKKAN THRESHOLD KE 12.000 
+                        // Karena gambar buram Anda bernilai 7.660
+                        const THRESHOLD = 12000; 
+
+                        if (finalScore < THRESHOLD) { 
+                            // Tampilkan skor di alert agar mudah dites
+                            Swal.fire({
+                                icon: 'warning',
+                                title: 'Gambar Terlalu Buram!',
+                                html: `Foto tidak fokus atau kurang cahaya.<br><br>
+                                       <span class="text-xs text-slate-500">Skor Ketajaman Anda: <b>${finalScore}</b><br>
+                                       Standar Minimum: <b>${THRESHOLD}</b></span>`,
+                                confirmButtonColor: '#16a34a',
+                            });
+                            
+                            document.getElementById('fileUploader').value = '';
+                            return;
+                        }
+
+                        this.hasImage = true;
+                        this.showResult = false;
+                        this.imagePreview = URL.createObjectURL(file);
+                        this.selectedFile = file;
+                    };
+                    img.src = URL.createObjectURL(file);
+                }
+            },
+
+            async analyzeImage() {
+                if (!this.selectedFile) return;
+
+                this.isAnalyzing = true;
+                this.showResult = false;
+
+                try {
+                    await new Promise(resolve => setTimeout(resolve, 2000));
+                    
+                    this.diseaseResult = { disease: 'Blight (Hawar Daun)' };
+                    this.$refs.llmExplanation.innerHTML = `
+                        <p class="mb-2">Berdasarkan analisis citra, daun ini menunjukkan gejala khas penyakit Hawar Daun (Blight).</p>
+                        <ul class="list-disc pl-5 space-y-1 text-xs">
+                            <li><b>Penyebab:</b> Infeksi jamur atau bakteri akibat kelembapan tinggi.</li>
+                            <li><b>Tindakan:</b> Pangkas daun yang terinfeksi dan semprotkan fungisida.</li>
+                        </ul>
+                    `;
+                    
+                    this.showResult = true;
+                } catch (error) {
+                    console.error("Error analyzing image:", error);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Gagal Memproses',
+                        text: 'Terjadi kesalahan saat menghubungi server AI.',
+                        confirmButtonColor: '#ef4444',
+                    });
+                } finally {
+                    this.isAnalyzing = false;
+                }
+            },
+            
             resetArea() {
                 this.hasImage = false;
                 this.imagePreview = null;
