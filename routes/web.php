@@ -47,6 +47,9 @@ Route::middleware('auth')->group(function () {
         Route::post('/rag/upload', function () {
             return back()->with('success', 'File RAG berhasil diproses (Simulasi UI)');
         });
+        Route::get('/settings', function () {
+            return view('settings');
+        })->name('settings');
     });
 
     // Route Halaman FE Lainnya
@@ -64,8 +67,4 @@ Route::middleware('auth')->group(function () {
     Route::get('/reports', function () {
         return view('reports');
     })->name('reports');
-
-    Route::get('/settings', function () {
-        return view('settings');
-    })->name('settings');
 });
