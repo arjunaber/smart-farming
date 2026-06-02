@@ -276,7 +276,7 @@ class RagDocumentController extends Controller
             'mime_type'         => $file->getMimeType(),
             'status'            => RagDocument::STATUS_UPLOADED,
             'collection_name'   => $collection,
-            'uploaded_by'       => Auth::id(),
+            'uploaded_by'       => Auth::id(), // null when called via service-to-service API
         ]);
     }
 }

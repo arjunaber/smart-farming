@@ -4,7 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\RagDocumentController;
 
 
-Route::middleware('auth:sanctum')->prefix('rag')->name('api.rag.')->group(function () {
+Route::middleware('rag.service')->prefix('rag')->name('api.rag.')->group(function () {
 
     Route::controller(RagDocumentController::class)->prefix('documents')->name('documents.')->group(function () {
         Route::get('/pending', 'apiPending')->name('pending');

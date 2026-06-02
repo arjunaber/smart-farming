@@ -13,7 +13,8 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->alias([
-            'role' => \App\Http\Middleware\Role::class,
+            'role'       => \App\Http\Middleware\Role::class,
+            'rag.service' => \App\Http\Middleware\RagServiceAuth::class,
         ]);
     })
     ->withMiddleware(function (Middleware $middleware) {
