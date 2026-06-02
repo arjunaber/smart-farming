@@ -159,11 +159,14 @@ class ChatbotController extends Controller
         $contextPrompt .= "\nPertanyaan Petani Sekarang: " . $request->question;
 
         try {
-            $endpoint = 'https://sq74g607-8000.asse.devtunnels.ms/recommend';
+            $endpoint = config('rag.endpoint') . '/recommend';
 
-            $response = Http::timeout(30)->asForm()->post($endpoint, [
-                'prompt' => $contextPrompt,
-            ]);
+            $response = Http::timeout(config('rag.timeout', 30))
+                ->withToken(config('rag.token'))
+                ->asForm()
+                ->post($endpoint, [
+                    'prompt' => $contextPrompt,
+                ]);
 
             if ($response->successful()) {
                 $result = $response->json();
