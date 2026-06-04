@@ -307,7 +307,7 @@
                                 <div class="mt-3 text-center sm:ml-4 sm:mt-0 sm:text-left">
                                     <h3 class="text-lg font-bold leading-6 text-slate-900 dark:text-white">Perangkat IoT
                                         Belum Terdeteksi</h3>
-                                    <div class="mt-2">
+                                    <div class="mt-2">bg-gradient-to-br from-indigo-600 to-blue-700 rounded-[2.5rem] p-8 text-white shadow-xl relative overflow-hidden group
                                         <p class="text-sm text-slate-500 dark:text-slate-400">Harap hubungi <b>Admin</b>
                                             untuk sinkronisasi ESP32 ke lahan <b>{{ $lahan->nama_lahan }}</b> agar data
                                             sensor muncul.</p>
