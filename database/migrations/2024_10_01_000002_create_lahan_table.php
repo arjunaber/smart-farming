@@ -15,6 +15,8 @@ return new class extends Migration
             $table->foreignId('komoditas_id')->constrained('master_komoditas');
             $table->json('polygon_coordinates')->nullable();
             $table->string('lokasi', 255);
+            $table->decimal('luas', 8, 2)->nullable();
+            $table->string('status')->default('Tersedia');
             $table->timestamps();
         });
     }

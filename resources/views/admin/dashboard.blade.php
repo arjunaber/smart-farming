@@ -1,4 +1,3 @@
-
 @extends('layouts.app')
 
 @section('content')
@@ -72,6 +71,83 @@
         </div>
     </div>
 
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div class="bg-white dark:bg-slate-900 rounded-3xl p-8 shadow-xl border border-slate-100 dark:border-slate-800">
+            <p class="text-sm font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Total Devices</p>
+            <p class="text-4xl font-black text-slate-800 dark:text-white mt-2">{{ $deviceCount }}</p>
+        </div>
+
+        <div class="bg-white dark:bg-slate-900 rounded-3xl p-8 shadow-xl border border-slate-100 dark:border-slate-800">
+            <p class="text-sm font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Online</p>
+            <p class="text-4xl font-black text-green-500 mt-2">{{ $onlineDeviceCount }}</p>
+        </div>
+
+        <div class="bg-white dark:bg-slate-900 rounded-3xl p-8 shadow-xl border border-slate-100 dark:border-slate-800">
+            <p class="text-sm font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Offline</p>
+            <p class="text-4xl font-black text-slate-400 mt-2">{{ max(0, $deviceCount - $onlineDeviceCount) }}</p>
+        </div>
+
+        <div class="bg-white dark:bg-slate-900 rounded-3xl p-8 shadow-xl border border-slate-100 dark:border-slate-800">
+            <p class="text-sm font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Pending Approval</p>
+            <p class="text-4xl font-black text-yellow-500 mt-2">{{ $pendingDeviceCount }}</p>
+            @if($pendingDeviceCount > 0)
+                <a href="{{ route('admin.iot-devices.pending') }}" class="inline-block mt-3 text-sm font-bold text-yellow-600 hover:text-yellow-700">Approve now →</a>
+            @endif
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div class="bg-white dark:bg-slate-900 rounded-3xl p-8 shadow-xl border border-slate-100 dark:border-slate-800">
+            <h3 class="text-xl font-black text-slate-800 dark:text-white mb-6">Lahan Terbaru</h3>
+            <div class="space-y-4">
+                @forelse($recentLahans as $lahan)
+                    <div class="flex items-center gap-4 p-4 bg-slate-50 dark:bg-slate-800 rounded-2xl">
+                        <div class="w-10 h-10 rounded-full bg-gradient-to-r from-green-500 to-green-600 flex items-center justify-center text-white font-bold text-sm">
+                            {{ substr($lahan->nama_lahan, 0, 2) }}
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <p class="font-bold text-slate-800 dark:text-white truncate">{{ $lahan->nama_lahan }}</p>
+                            <p class="text-sm text-slate-500">{{ $lahan->petani->user->name ?? 'N/A' }}</p>
+                        </div>
+                        <div class="text-right">
+                            <p class="font-bold text-lg text-green-600 dark:text-green-400">{{ $lahan->online_count }}/{{ $lahan->devices_count }}</p>
+                            <p class="text-xs text-slate-500">Online</p>
+                        </div>
+                    </div>
+                @empty
+                    <p class="text-center text-slate-500 py-8">Belum ada lahan</p>
+                @endforelse
+            </div>
+        </div>
+
+        <div class="bg-white dark:bg-slate-900 rounded-3xl p-8 shadow-xl border border-slate-100 dark:border-slate-800">
+            <h3 class="text-xl font-black text-slate-800 dark:text-white mb-6">Device Pending</h3>
+            <div class="space-y-4">
+                @forelse($pendingDevices as $device)
+                    <div class="flex items-center gap-4 p-4 bg-slate-50 dark:bg-slate-800 rounded-2xl">
+                        <div class="w-10 h-10 rounded-full bg-yellow-100 dark:bg-yellow-900/30 flex items-center justify-center text-yellow-600 font-bold text-xs">
+                            P
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <p class="font-bold text-slate-800 dark:text-white truncate text-sm">{{ $device->device_name ?? 'Unnamed' }}</p>
+                            <p class="text-xs text-slate-500 font-mono">{{ $device->device_uid }}</p>
+                        </div>
+                        <div>
+                            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300">Pending</span>
+                        </div>
+                    </div>
+                @empty
+                    <p class="text-center text-slate-500 py-8">Tidak ada device pending</p>
+                @endforelse
+            </div>
+            @if($pendingDeviceCount > 0)
+                <div class="mt-4 text-right">
+                    <a href="{{ route('admin.iot-devices.pending') }}" class="text-sm font-bold text-yellow-600 hover:text-yellow-700">Approve device →</a>
+                </div>
+            @endif
+        </div>
+    </div>
+
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
         <div class="bg-white dark:bg-slate-900 rounded-3xl p-8 shadow-xl border border-slate-100 dark:border-slate-800">
             <h3 class="text-xl font-black text-slate-800 dark:text-white mb-6">Petani Aktif</h3>
@@ -107,9 +183,16 @@
                     <p class="text-3xl font-black text-slate-800 dark:text-white">{{ $lahanTotal }}</p>
                     <p class="text-sm text-slate-500">Lahan</p>
                 </div>
+                <div>
+                    <p class="text-3xl font-black text-slate-800 dark:text-white">{{ $deviceCount }}</p>
+                    <p class="text-sm text-slate-500">Devices</p>
+                </div>
+                <div>
+                    <p class="text-3xl font-black text-green-500">{{ $onlineDeviceCount }}</p>
+                    <p class="text-sm text-slate-500">Online</p>
+                </div>
             </div>
         </div>
     </div>
 </div>
 @endsection
-
