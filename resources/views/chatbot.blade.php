@@ -386,12 +386,26 @@
 
                 {{-- Selector Lahan --}}
                 <div class="flex items-center gap-2">
-                    <label class="text-xs text-slate-500 dark:text-slate-400 hidden sm:block">Lahan:</label>
+                    <label class="text-xs text-slate-500 dark:text-slate-400 hidden sm:block">
+                        {{ auth()->user()->role === 'superadmin' ? 'Lahan (Semua User)' : 'Lahan' }}:
+                    </label>
                     <select x-model="selectedLahanId" @change="onLahanChange()"
                         class="text-xs bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-1.5 text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-green-500">
+
                         @foreach ($lahanList as $lahan)
-                            <option value="{{ $lahan->id }}" {{ $lahan->id == $selectedLahanId ? 'selected' : '' }}>
+                            <option value="{{ $lahan->id }}"
+                                {{ (string) $lahan->id === (string) $selectedLahanId ? 'selected' : '' }}>
+
                                 {{ $lahan->nama_lahan }}
+
+                                @if (auth()->user()->role === 'superadmin')
+                                    @if ($lahan->petani?->user)
+                                        ({{ $lahan->petani->user->name }})
+                                    @else
+                                        (Unknown Owner)
+                                    @endif
+                                @endif
+
                             </option>
                         @endforeach
                     </select>
@@ -720,10 +734,10 @@
                                 role: 'bot',
                                 text: resJson.data.answer || 'Maaf, tidak ada respon.',
                                 time: resJson.data.time || new Date().toLocaleTimeString(
-                            [], {
-                                    hour: '2-digit',
-                                    minute: '2-digit'
-                                }),
+                                    [], {
+                                        hour: '2-digit',
+                                        minute: '2-digit'
+                                    }),
                                 typing: true
                             });
 
