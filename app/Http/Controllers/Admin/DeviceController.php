@@ -9,17 +9,35 @@ use Illuminate\Http\Request;
 
 class DeviceController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $devices = Device::with('lahan:id,nama_lahan')->latest()->paginate(20);
-        return view('admin.iot-devices', compact('devices'));
-    }
+        $status = $request->get('status', 'all'); // all | pending | active | suspended
+        $search = $request->get('q');
 
-    public function pending()
-    {
+        $query = Device::with(['lahan.petani.user'])
+            ->when(
+                $search,
+                fn($q) => $q
+                    ->where('device_uid', 'like', "%{$search}%")
+                    ->orWhere('device_name', 'like', "%{$search}%")
+            )
+            ->when($status === 'pending',   fn($q) => $q->pending())
+            ->when($status === 'active',    fn($q) => $q->active())
+            ->when($status === 'suspended', fn($q) => $q->suspended())
+            ->latest();
+
+        $devices = $query->paginate(15)->withQueryString();
+
+        $counts = [
+            'all'       => Device::count(),
+            'pending'   => Device::pending()->count(),
+            'active'    => Device::active()->count(),
+            'suspended' => Device::suspended()->count(),
+        ];
+
         $lahans = Lahan::with('petani.user:id,name')->get();
-        $devices = Device::pending()->latest()->paginate(20);
-        return view('admin.iot-devices', compact('devices', 'lahans'));
+
+        return view('admin.iot-devices', compact('devices', 'counts', 'lahans'));
     }
 
     public function approve(Request $request, Device $device)
@@ -33,8 +51,8 @@ class DeviceController extends Controller
         ]);
 
         $device->update([
-            'lahan_id' => $validated['lahan_id'],
-            'status' => 'active',
+            'lahan_id'    => $validated['lahan_id'],
+            'status'      => 'active',
             'approved_at' => now(),
         ]);
 
@@ -58,11 +76,11 @@ class DeviceController extends Controller
     public function reset(Device $device)
     {
         $device->update([
-            'lahan_id' => null,
-            'status' => 'pending',
-            'device_token_hash' => null,
-            'approved_at' => null,
-            'token_retrieved_at' => null,
+            'lahan_id'            => null,
+            'status'              => 'pending',
+            'device_token_hash'   => null,
+            'approved_at'         => null,
+            'token_retrieved_at'  => null,
         ]);
 
         return back()->with('success', "Device {$device->device_uid} reset to pending.");
