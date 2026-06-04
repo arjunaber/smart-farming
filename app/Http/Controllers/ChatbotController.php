@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Models\ChatbotHistory;
 use App\Models\Lahan;
-use App\Models\EnvironmentalMetric;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
@@ -12,54 +11,72 @@ use Illuminate\Support\Str;
 
 class ChatbotController extends Controller
 {
+    /**
+     * =========================
+     * INDEX (ROLE-BASED LAHAN)
+     * =========================
+     */
     public function index(Request $request)
     {
-        $petani = Auth::user()->petani;
-        $lahanList = $petani ? $petani->lahan : collect();
+        $user = Auth::user();
 
-        $selectedLahanId = $request->get('lahan_id') ?? ($lahanList->first()->id ?? null);
+        if ($user->role === 'super_admin') {
 
+            // SUPERADMIN: semua lahan + relasi owner
+            $lahanList = Lahan::with(['petani.user', 'komoditas'])
+                ->orderBy('nama_lahan')
+                ->get();
+        } else {
+
+            // PETANI: hanya lahan miliknya
+            $petani = $user->petani;
+
+            $lahanList = $petani
+                ? $petani->lahan()->with(['komoditas'])->get()
+                : collect();
+        }
+
+        $selectedLahanId = $request->get('lahan_id')
+            ?? $lahanList->first()?->id;
         return view('chatbot', compact('lahanList', 'selectedLahanId'));
     }
 
     /**
-     * Ambil daftar sesi history chat, dikelompokkan berdasarkan tanggal.
-     * Dipanggil via AJAX dari sidebar.
+     * =========================
+     * HISTORY LIST
+     * =========================
      */
-    public function history(Request $request)
+    public function history()
     {
         $userId = Auth::id();
 
-        // Ambil semua sesi unik milik user, sorted by latest
         $sessions = ChatbotHistory::where('user_id', $userId)
             ->select('session_id', 'lahan_id', 'question', 'created_at')
-            ->orderBy('created_at', 'desc')
+            ->orderByDesc('created_at')
             ->get()
-            ->unique('session_id') // Ambil 1 record per sesi (yang pertama = pertanyaan pertama)
+            ->unique('session_id')
             ->values();
+
+        $grouped = [
+            'today' => [],
+            'pastWeek' => [],
+            'older' => [],
+        ];
 
         $today = now()->startOfDay();
         $weekAgo = now()->subDays(7)->startOfDay();
 
-        $grouped = [
-            'today'    => [],
-            'pastWeek' => [],
-            'older'    => [],
-        ];
-
         foreach ($sessions as $session) {
-            $createdAt = $session->created_at;
-            $title = Str::limit($session->question, 45);
 
             $entry = [
-                'id'        => $session->session_id,
-                'title'     => $title,
-                'lahan_id'  => $session->lahan_id,
+                'id' => $session->session_id,
+                'title' => Str::limit($session->question, 50),
+                'lahan_id' => $session->lahan_id,
             ];
 
-            if ($createdAt->gte($today)) {
+            if ($session->created_at->gte($today)) {
                 $grouped['today'][] = $entry;
-            } elseif ($createdAt->gte($weekAgo)) {
+            } elseif ($session->created_at->gte($weekAgo)) {
                 $grouped['pastWeek'][] = $entry;
             } else {
                 $grouped['older'][] = $entry;
@@ -68,32 +85,38 @@ class ChatbotController extends Controller
 
         return response()->json([
             'status' => 'success',
-            'data'   => $grouped,
+            'data' => $grouped,
         ]);
     }
 
     /**
-     * Ambil semua pesan dalam satu sesi chat berdasarkan session_id.
+     * =========================
+     * HISTORY DETAIL
+     * =========================
      */
-    public function historyDetail(Request $request, $sessionId)
+    public function historyDetail($sessionId)
     {
         $records = ChatbotHistory::where('user_id', Auth::id())
             ->where('session_id', $sessionId)
-            ->orderBy('created_at', 'asc')
+            ->orderBy('created_at')
             ->get();
 
         if ($records->isEmpty()) {
-            return response()->json(['status' => 'error', 'message' => 'Sesi tidak ditemukan.'], 404);
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Session tidak ditemukan'
+            ], 404);
         }
 
-        // Ubah setiap record menjadi pasangan user + bot message
         $messages = [];
+
         foreach ($records as $record) {
             $messages[] = [
                 'role' => 'user',
                 'text' => $record->question,
                 'time' => $record->created_at->format('H:i'),
             ];
+
             $messages[] = [
                 'role' => 'bot',
                 'text' => $record->answer,
@@ -103,97 +126,211 @@ class ChatbotController extends Controller
 
         return response()->json([
             'status' => 'success',
-            'data'   => $messages,
+            'data' => $messages,
         ]);
     }
 
     /**
-     * Proses pertanyaan baru dan simpan ke database.
+     * =========================
+     * ASK AI (MAIN FLOW)
+     * =========================
      */
     public function ask(Request $request)
     {
         $request->validate([
-            'lahan_id'   => 'required|exists:lahan,id',
-            'question'   => 'required|string',
-            'session_id' => 'nullable|string', // Boleh nullable, nanti di-generate kalau null
+            'lahan_id' => 'required|exists:lahan,id',
+            'question' => 'required|string',
+            'session_id' => 'nullable|string',
         ]);
 
-        $lahan = Lahan::find($request->lahan_id);
+        $lahan = Lahan::with(['komoditas', 'devices.latestReading'])
+            ->find($request->lahan_id);
 
-        // Gunakan session_id dari request, atau buat baru jika belum ada
+        if (!$lahan) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Lahan tidak ditemukan'
+            ], 404);
+        }
+
         $sessionId = $request->session_id ?: (string) Str::uuid();
 
-        // 1. Ambil metrik IoT terbaru sebagai konteks
-        $latestMetric = EnvironmentalMetric::whereHas('iotDevice', function ($q) use ($lahan) {
-            $q->where('lahan_id', $lahan->id);
-        })->latest('recorded_at')->first();
+        /**
+         * =========================
+         * SENSOR DATA
+         * =========================
+         */
+        $device = $lahan->devices?->first();
+        $sensor = $device?->latestReading;
 
-        // 2. Ambil riwayat percakapan dalam sesi ini untuk konteks multi-turn
-        $conversationHistory = ChatbotHistory::where('session_id', $sessionId)
-            ->orderBy('created_at', 'asc')
+        /**
+         * =========================
+         * WEATHER (BMKG)
+         * =========================
+         */
+        $weather = $this->getWeatherData($lahan->lokasi ?? '');
+
+        /**
+         * =========================
+         * CHAT HISTORY
+         * =========================
+         */
+        $history = ChatbotHistory::where('session_id', $sessionId)
+            ->orderBy('created_at')
             ->get();
 
-        // 3. Susun prompt dengan konteks data sensor + riwayat percakapan
-        $contextPrompt = "Anda adalah sistem pakar AI pertanian pintar AGA Smart Farming.\n";
-        $contextPrompt .= "Konteks Lahan Saat Ini:\n";
-        $contextPrompt .= "- Nama Lahan: {$lahan->nama_lahan}\n";
+        /**
+         * =========================
+         * PROMPT BUILDER
+         * =========================
+         */
+        $prompt = $this->buildPrompt(
+            $lahan,
+            $sensor,
+            $weather,
+            $history,
+            $request->question
+        );
 
-        if ($latestMetric) {
-            $contextPrompt .= "- Suhu Udara: {$latestMetric->temperature}°C\n";
-            $contextPrompt .= "- Kelembapan Udara: {$latestMetric->humidity}%\n";
-            $contextPrompt .= "- Kelembapan Tanah (pH sensor): {$latestMetric->ph}%\n";
-            $contextPrompt .= "- Intensitas Cahaya: {$latestMetric->light_intensity} lux\n";
-        } else {
-            $contextPrompt .= "- Data sensor IoT belum tersedia.\n";
-        }
-
-        // Tambahkan riwayat percakapan jika ada
-        if ($conversationHistory->isNotEmpty()) {
-            $contextPrompt .= "\nRiwayat percakapan sebelumnya dalam sesi ini:\n";
-            foreach ($conversationHistory as $chat) {
-                $contextPrompt .= "Petani: {$chat->question}\n";
-                $contextPrompt .= "AGA AI: {$chat->answer}\n";
-            }
-        }
-
-        $contextPrompt .= "\nPertanyaan Petani Sekarang: " . $request->question;
-
+        /**
+         * =========================
+         * CALL LLM
+         * =========================
+         */
         try {
-            $endpoint = config('rag.endpoint') . '/recommend';
-
-            $response = Http::timeout(config('rag.timeout', 30))
+            $response = Http::timeout(30)
                 ->withToken(config('rag.token'))
                 ->asForm()
-                ->post($endpoint, [
-                    'prompt' => $contextPrompt,
+                ->post(config('rag.endpoint') . '/recommend', [
+                    'prompt' => $prompt,
                 ]);
 
-            if ($response->successful()) {
-                $result = $response->json();
-                $answer = $result['recommendationn'] ?? $result['recommendation'] ?? 'Maaf, model tidak memberikan jawaban.';
-            } else {
-                $answer = "Maaf, sistem AI sedang sibuk. (Status: " . $response->status() . ")";
+            if (!$response->successful()) {
+                throw new \Exception("HTTP " . $response->status());
             }
-        } catch (\Exception $e) {
-            $answer = "Terjadi kegagalan koneksi ke server AI: " . $e->getMessage();
+
+            $data = $response->json();
+
+            $answer = $data['recommendation']
+                ?? $data['recommendationn']
+                ?? 'AI tidak memberikan jawaban';
+        } catch (\Throwable $e) {
+            $answer = "AI error: " . $e->getMessage();
         }
 
-        // 4. Simpan ke database
-        $chatRecord = ChatbotHistory::create([
-            'user_id'    => Auth::id(),
-            'lahan_id'   => $lahan->id,
+        /**
+         * =========================
+         * SAVE CHAT
+         * =========================
+         */
+        $chat = ChatbotHistory::create([
+            'user_id' => Auth::id(),
+            'lahan_id' => $lahan->id,
             'session_id' => $sessionId,
-            'question'   => $request->question,
-            'answer'     => $answer,
+            'question' => $request->question,
+            'answer' => $answer,
         ]);
 
         return response()->json([
             'status' => 'success',
-            'data'   => [
-                'answer'     => $chatRecord->answer,
-                'session_id' => $chatRecord->session_id,
-                'time'       => $chatRecord->created_at->format('H:i'),
+            'data' => [
+                'answer' => $chat->answer,
+                'session_id' => $chat->session_id,
+                'time' => $chat->created_at->format('H:i'),
             ],
         ]);
+    }
+
+    /**
+     * =========================
+     * PROMPT ENGINE (ANTI HALLUCINATION)
+     * =========================
+     */
+    private function buildPrompt($lahan, $sensor, $weather, $history, $question): string
+    {
+        $prompt = "Anda adalah AI Smart Farming Assistant.\n";
+        $prompt .= "WAJIB hanya gunakan data yang diberikan.\n";
+        $prompt .= "Jika data tidak tersedia, jawab: 'Data tidak cukup'.\n\n";
+
+        $prompt .= "=== LAHAN ===\n";
+        $prompt .= "Nama: {$lahan->nama_lahan}\n";
+        $prompt .= "Komoditas: " . ($lahan->komoditas->nama_komoditas ?? '-') . "\n\n";
+
+        $prompt .= "=== SENSOR ===\n";
+
+        if ($sensor) {
+            $prompt .= "Moisture: {$sensor->humidity}\n";
+            $prompt .= "pH: {$sensor->ph}\n";
+            $prompt .= "Temperature: {$sensor->temperature}\n";
+        } else {
+            $prompt .= "Tidak ada data sensor\n";
+        }
+
+        $prompt .= "\n=== CUACA ===\n";
+        $prompt .= "Temp: " . ($weather['temp'] ?? '--') . "\n";
+        $prompt .= "Humidity: " . ($weather['humidity'] ?? '--') . "\n";
+        $prompt .= "Condition: " . ($weather['condition'] ?? '--') . "\n\n";
+
+        if ($history->isNotEmpty()) {
+            $prompt .= "=== HISTORY ===\n";
+            foreach ($history as $h) {
+                $prompt .= "User: {$h->question}\n";
+                $prompt .= "AI: {$h->answer}\n";
+            }
+        }
+
+        $prompt .= "\n=== QUESTION ===\n{$question}\n";
+
+        return $prompt;
+    }
+
+    /**
+     * =========================
+     * BMKG WEATHER (SAFE VERSION)
+     * =========================
+     */
+    private function getWeatherData(string $kode): array
+    {
+        if (!$kode) {
+            return [
+                'temp' => '--',
+                'humidity' => '--',
+                'condition' => 'No location',
+            ];
+        }
+
+        return cache()->remember("bmkg_{$kode}", 1800, function () use ($kode) {
+
+            try {
+                $response = Http::timeout(10)->get(
+                    'https://api.bmkg.go.id/publik/prakiraan-cuaca',
+                    ['adm4' => $kode]
+                );
+
+                if (!$response->successful()) {
+                    throw new \Exception();
+                }
+
+                $data = $response->json();
+
+                $forecast = $data['data'][0]['cuaca'][0][0] ?? null;
+
+                if (!$forecast) {
+                    throw new \Exception();
+                }
+
+                return [
+                    'temp' => $forecast['t'] ?? '--',
+                    'humidity' => $forecast['hu'] ?? '--',
+                    'condition' => $forecast['weather_desc'] ?? '--',
+                ];
+            } catch (\Throwable $e) {
+                return [
+                    'temp' => '--',
+                    'humidity' => '--',
+                    'condition' => 'BMKG unavailable',
+                ];
+            }
+        });
     }
 }
