@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Lahan;
-use App\Models\Sensor;
+use App\Models\SensorReading;
 use Carbon\Carbon;
 
 class DashboardController extends Controller
@@ -25,11 +25,9 @@ class DashboardController extends Controller
             return view('dashboard', $this->emptyState());
         }
 
-        $device    = $lahan->iotDevices()->first();
+        $device    = $lahan->devices()->first();
         $needsSync = !$device;
-        $sensorData = $device
-            ? Sensor::where('sensor_id', $device->sensor_id ?? $device->id)->latest()->first()
-            : null;
+        $sensorData = $device?->latestReading;
 
         $kodeWilayah = $lahan->lokasi;
         $weatherData = $this->getWeatherData($kodeWilayah);
@@ -46,7 +44,7 @@ class DashboardController extends Controller
             'soil_ph'        => $sensorData ? $sensorData->ph       : '--',
             'soil_moist'     => $sensorData ? $sensorData->humidity  : '--',
             'last_update'    => $sensorData
-                ? Carbon::parse($sensorData->created_at)->format('H:i')
+                ? Carbon::parse($sensorData->recorded_at)->format('H:i')
                 : Carbon::now()->format('H:i'),
             'luas_lahan'     => $luasLahan,
             'komoditas_nama' => $lahan->komoditas->nama_komoditas ?? 'N/A',

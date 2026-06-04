@@ -10,11 +10,16 @@ return new class extends Migration
     {
         Schema::create('iot_devices', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('lahan_id')->constrained('lahan')->cascadeOnDelete();
-            $table->string('device_name', 150);
-            $table->string('device_type', 100);
-            $table->string('serial_number', 100);
-            $table->string('status')->nullable();
+            $table->string('device_uid', 64)->unique();
+            $table->string('device_name', 100)->nullable();
+            $table->string('device_type', 50)->nullable();
+            $table->string('serial_number', 100)->nullable();
+            $table->string('device_token_hash', 64)->nullable()->index();
+            $table->string('status', 20)->default('active');
+            $table->timestamp('last_seen')->nullable();
+            $table->timestamp('approved_at')->nullable();
+            $table->timestamp('token_retrieved_at')->nullable();
+            $table->foreignId('lahan_id')->nullable()->constrained('lahan')->nullOnDelete();
             $table->timestamps();
         });
     }

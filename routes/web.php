@@ -44,6 +44,14 @@ Route::middleware('auth')->group(function () {
             Route::delete('/{ragDocument}', 'destroy')->name('destroy');
         });
 
+        Route::controller(\App\Http\Controllers\Admin\DeviceController::class)->prefix('admin/iot-devices')->name('admin.iot-devices.')->group(function () {
+            Route::get('/', 'index')->name('index');
+            Route::get('/pending', 'pending')->name('pending');
+            Route::post('/{device}/approve', 'approve')->name('approve');
+            Route::post('/{device}/suspend', 'suspend')->name('suspend');
+            Route::post('/{device}/reset', 'reset')->name('reset');
+        });
+
         Route::get('/settings', function () {
             return view('settings');
         })->name('settings');

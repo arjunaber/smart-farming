@@ -67,8 +67,7 @@
                     <p class="text-xs font-bold opacity-80 uppercase tracking-widest mb-2">Kelembapan Tanah</p>
                     <div class="flex items-baseline gap-3">
                         <h2 class="text-6xl font-black tracking-tighter">{{ $soil_moist }}</h2>
-                        <span class="bg-black/10 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider">Unit
-                            ADC</span>
+                        <span class="bg-black/10 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider">%</span>
                     </div>
                     <div class="mt-6 flex items-center gap-2 text-xs opacity-70">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

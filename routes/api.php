@@ -1,7 +1,11 @@
-﻿<?php
+<?php
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\RagDocumentController;
+use App\Http\Controllers\Api\Iot\RegisterController;
+use App\Http\Controllers\Api\Iot\ActivateController;
+use App\Http\Controllers\Api\Iot\ReadingController;
+use App\Http\Controllers\Api\Iot\HeartbeatController;
 
 
 Route::middleware('rag.service')->prefix('rag')->name('api.rag.')->group(function () {
@@ -14,5 +18,15 @@ Route::middleware('rag.service')->prefix('rag')->name('api.rag.')->group(functio
         Route::delete('/{ragDocument}', 'apiDestroy')->name('destroy');
         Route::get('/{ragDocument}/download', 'apiDownload')->name('download');
         Route::patch('/{ragDocument}/status', 'apiUpdateStatus')->name('update-status');
+    });
+});
+
+Route::prefix('iot')->name('iot.')->group(function () {
+    Route::post('/register', [RegisterController::class, 'register'])->name('register');
+    Route::post('/activate', [ActivateController::class, 'activate'])->name('activate');
+
+    Route::middleware('device.token')->group(function () {
+        Route::post('/readings', [ReadingController::class, 'store'])->name('readings.store');
+        Route::post('/heartbeat', [HeartbeatController::class, 'heartbeat'])->name('heartbeat');
     });
 });

@@ -44,6 +44,12 @@ class Lahan extends Model
         return $this->hasMany(IotDevice::class, 'lahan_id');
     }
 
+    // Perangkat IoT (sistem baru) yang terdaftar di lahan ini
+    public function devices()
+    {
+        return $this->hasMany(Device::class, 'lahan_id');
+    }
+
     // Riwayat konsultasi chatbot terkait lahan ini
     public function chatbotHistories()
     {
