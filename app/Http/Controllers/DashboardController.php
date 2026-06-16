@@ -37,6 +37,7 @@ class DashboardController extends Controller
             ? $lahan->hitungLuas()
             : $this->hitungLuasPolygon($lahan->polygon_coordinates ?? []);
 
+
         return view('dashboard', array_merge($weatherData, [
             'lahan'          => $lahan,
             'userLahan'      => $userLahan,
@@ -96,6 +97,7 @@ class DashboardController extends Controller
                 if ($response->successful()) {
                     $raw       = $response->json();
                     $forecasts = $raw['data'][0]['cuaca'][0] ?? [];
+
 
                     if (!empty($forecasts)) {
                         $now          = now()->format('Y-m-d H:i:s');

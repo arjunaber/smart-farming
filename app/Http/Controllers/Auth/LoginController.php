@@ -13,6 +13,7 @@ class LoginController extends Controller
         return view('welcome');
     }
 
+
     public function login(Request $request)
     {
         $credentials = $request->validate([
@@ -25,17 +26,16 @@ class LoginController extends Controller
             return redirect()->intended('/dashboard');
         }
 
-        return back()->withErrors([
-            'email' => 'Email atau password salah.',
-        ])->onlyInput('email');
+        return back()->withErrors([ 
+            'email' => 'Email atau password salah.',    
+        ])->onlyInput('email'); 
     }
 
-    public function logout(Request $request)
-    {
-        Auth::logout();
-        $request->session()->invalidate();
-        $request->session()->regenerateToken();
-        return redirect('/');
+    public function logout(Request $request)    
+    {   
+        Auth::logout(); 
+        $request->session()->invalidate();  
+        $request->session()->regenerateToken(); 
+        return redirect('/');   
     }
 }
-
