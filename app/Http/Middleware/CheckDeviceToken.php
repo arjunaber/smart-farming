@@ -17,13 +17,13 @@ class CheckDeviceToken
         }
 
         
-        $hash = hash('sha256', $token);
-        $device = Device::where('device_token_hash', $hash)
-            ->where('status', 'active')
-            ->first();
+        $hash = hash('sha256', $token); 
+        $device = Device::where('device_token_hash', $hash)  
+            ->where('status', 'active') 
+            ->first(); 
 
-        if (!$device) {
-            return response()->json(['message' => 'Invalid or inactive device token'], 401);
+        if (!$device) { 
+            return response()->json(['message' => 'Invalid or inactive device token'], 401); 
         }
 
         $request->merge(['device' => $device]);
