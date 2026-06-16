@@ -15,10 +15,10 @@ class ActivateController extends Controller
             'device_uid' => 'required|string|max:64',
         ]);
 
-        $device = Device::where('device_uid', $request->device_uid)->first(); 
+        $device = Device::where('device_uid', $request->device_uid)->first();   
 
-        if (!$device || $device->isPending()) { 
-            return response()->json(['status' => 'pending']); 
+        if (!$device || $device->isPending()) {     
+            return response()->json(['status' => 'pending']);   
         }
  
         if ($device->isSuspended()) { 
