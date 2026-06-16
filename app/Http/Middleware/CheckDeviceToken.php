@@ -16,6 +16,7 @@ class CheckDeviceToken
             return response()->json(['message' => 'Device token not provided'], 401);
         }
 
+        
         $hash = hash('sha256', $token);
         $device = Device::where('device_token_hash', $hash)
             ->where('status', 'active')
