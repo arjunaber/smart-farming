@@ -73,7 +73,6 @@ class LahanController extends Controller
     {
         $petani = Auth::user()->petani;
 
-        // Perbaikan logis: Menghindari overwrite variabel agar data terfilter per-petani secara konsisten
         $lahan = $petani
             ? $petani->lahan()
             ->with(['komoditas'])

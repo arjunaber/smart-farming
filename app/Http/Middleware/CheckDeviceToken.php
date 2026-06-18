@@ -12,9 +12,14 @@ class CheckDeviceToken
     {
         $token = $request->bearerToken();
 
+        // \Log::info('DEVICE TOKEN', [
+        //     'token' => $token
+        // ]);
+
         if (!$token) {
             return response()->json(['message' => 'Device token not provided'], 401);
         }
+
 
         $hash = hash('sha256', $token);
         $device = Device::where('device_token_hash', $hash)

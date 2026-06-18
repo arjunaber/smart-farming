@@ -13,29 +13,29 @@ class LoginController extends Controller
         return view('welcome');
     }
 
-    public function login(Request $request)
-    {
-        $credentials = $request->validate([
-            'email' => 'required|email',
-            'password' => 'required',
-        ]);
 
-        if (Auth::attempt($credentials, $request->boolean('remember'))) {
-            $request->session()->regenerate();
-            return redirect()->intended('/dashboard');
+    public function login(Request $request)     
+    {       
+        $credentials = $request->validate([     
+            'email' => 'required|email',        
+            'password' => 'required',       
+        ]);     
+
+        if (Auth::attempt($credentials, $request->boolean('remember'))) {       
+            $request->session()->regenerate();      
+            return redirect()->intended('/dashboard');      
         }
 
-        return back()->withErrors([
-            'email' => 'Email atau password salah.',
-        ])->onlyInput('email');
-    }
-
-    public function logout(Request $request)
-    {
-        Auth::logout();
-        $request->session()->invalidate();
-        $request->session()->regenerateToken();
-        return redirect('/');
+        return back()->withErrors([         
+            'email' => 'Email atau password salah.',            
+        ])->onlyInput('email');     
+    }   
+    
+    public function logout(Request $request)        
+    {   
+        Auth::logout();     
+        $request->session()->invalidate();  
+        $request->session()->regenerateToken(); 
+        return redirect('/');   
     }
 }
-
