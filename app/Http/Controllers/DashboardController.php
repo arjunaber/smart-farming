@@ -32,7 +32,6 @@ class DashboardController extends Controller
         $kodeWilayah = $lahan->lokasi;
         $weatherData = $this->getWeatherData($kodeWilayah);
 
-        // ↓ Hitung luas dari polygon_coordinates jika hitungLuas() belum ada di model
         $luasLahan = method_exists($lahan, 'hitungLuas')
             ? $lahan->hitungLuas()
             : $this->hitungLuasPolygon($lahan->polygon_coordinates ?? []);

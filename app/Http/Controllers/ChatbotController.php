@@ -22,13 +22,11 @@ class ChatbotController extends Controller
 
         if ($user->role === 'super_admin') {
 
-            // SUPERADMIN: semua lahan + relasi owner
             $lahanList = Lahan::with(['petani.user', 'komoditas'])
                 ->orderBy('nama_lahan')
                 ->get();
         } else {
 
-            // PETANI: hanya lahan miliknya
             $petani = $user->petani;
 
             $lahanList = $petani
@@ -38,6 +36,7 @@ class ChatbotController extends Controller
 
         $selectedLahanId = $request->get('lahan_id')
             ?? $lahanList->first()?->id;
+
         return view('chatbot', compact('lahanList', 'selectedLahanId'));
     }
 
