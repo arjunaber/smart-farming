@@ -154,35 +154,16 @@ class ChatbotController extends Controller
 
         $sessionId = $request->session_id ?: (string) Str::uuid();
 
-        /**
-         * =========================
-         * SENSOR DATA
-         * =========================
-         */
         $device = $lahan->devices?->first();
         $sensor = $device?->latestReading;
 
-        /**
-         * =========================
-         * WEATHER (BMKG)
-         * =========================
-         */
         $weather = $this->getWeatherData($lahan->lokasi ?? '');
 
-        /**
-         * =========================
-         * CHAT HISTORY
-         * =========================
-         */
         $history = ChatbotHistory::where('session_id', $sessionId)
+            ->where('user_id', Auth::id())
             ->orderBy('created_at')
             ->get();
 
-        /**
-         * =========================
-         * PROMPT BUILDER
-         * =========================
-         */
         $prompt = $this->buildPrompt(
             $lahan,
             $sensor,
