@@ -19,7 +19,11 @@ class SiklusTanamController extends Controller
             ->whereIn('lahan_id', $petani->lahan()->pluck('id'))
             ->latest()
             ->paginate(10)
-            : collect();
+            // Ganti collect() dengan Paginator kosong agar fungsi links() di Blade tetap aman
+            : new \Illuminate\Pagination\LengthAwarePaginator([], 0, 10, 1, [
+            'path' => request()->url(),
+            'query' => request()->query()
+        ]);
 
         return view('siklus_tanam.index', compact('siklus'));
     }
