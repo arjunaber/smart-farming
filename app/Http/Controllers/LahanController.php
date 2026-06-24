@@ -69,23 +69,27 @@ class LahanController extends Controller
         '32.74.01.1001' => 'Kota Cirebon (Kejaksan)',
     ];
 
-    public function index()
-    {
-        $petani = Auth::user()->petani;
+   public function index()
+{
+    $petani = Auth::user()->petani;
 
-        $lahan = $petani
-            ? $petani->lahan()
-            ->with(['komoditas'])
-            ->withCount(['siklusTanam as logbook_entries_count' => function ($query) {
-                $query->leftJoin('logbook_entries', 'siklus_tanam.id', '=', 'logbook_entries.siklus_tanam_id')
-                    ->select(DB::raw('count(logbook_entries.id)'));
-            }])
-            ->latest()
-            ->paginate(10)
-            : collect();
+    $lahan = $petani
+        ? $petani->lahan()
+        ->with(['komoditas'])
+        ->withCount(['siklusTanam as logbook_entries_count' => function ($query) {
+            $query->leftJoin('logbook_entries', 'siklus_tanam.id', '=', 'logbook_entries.siklus_tanam_id')
+                ->select(DB::raw('count(logbook_entries.id)'));
+        }])
+        ->latest()
+        ->paginate(10)
+        // Ganti collect() dengan Paginator kosong agar fungsi links() di Blade tetap aman
+        : new \Illuminate\Pagination\LengthAwarePaginator([], 0, 10, 1, [
+            'path' => request()->url(),
+            'query' => request()->query()
+        ]);
 
-        return view('lahan.index', compact('lahan'));
-    }
+    return view('lahan.index', compact('lahan'));
+}
 
     public function create()
     {
