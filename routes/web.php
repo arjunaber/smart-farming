@@ -12,6 +12,7 @@ use App\Http\Controllers\SiklusTanamController;
 use App\Http\Controllers\KeuanganController;
 use App\Http\Controllers\ChatbotController;
 use App\Http\Controllers\RagDocumentController;
+use App\Http\Controllers\DiseaseController;
 
 Route::get('/', [LoginController::class, 'showLogin'])->name('login');
 Route::post('/', [LoginController::class, 'login']);
@@ -57,9 +58,8 @@ Route::middleware('auth')->group(function () {
     });
 
     // Route Halaman FE Lainnya
-    Route::get('/disease', function () {
-        return view('disease');
-    })->name('disease');
+    Route::get('/disease',         [DiseaseController::class, 'index'])->name('disease.index');
+    Route::post('/disease/analyze', [DiseaseController::class, 'analyze'])->name('disease.analyze');
 
     Route::prefix('chatbot')->group(function () {
         Route::get('/', [ChatbotController::class, 'index'])->name('chatbot.index');

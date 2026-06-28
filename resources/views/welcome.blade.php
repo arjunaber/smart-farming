@@ -202,15 +202,32 @@
                 <h2 class="text-3xl font-extrabold text-slate-900 tracking-tight">Selamat Datang</h2>
                 <p class="text-slate-500 mt-2 font-medium">Masuk untuk mengelola ekosistem tani Anda</p>
             </div>
+
             <form method="POST" action="{{ route('login') }}" class="space-y-6">
                 @csrf
+
+                @if ($errors->any())
+                    <div
+                        class="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-2xl text-sm font-medium flex items-center gap-2">
+                        <svg class="w-5 h-5 text-red-500 shrink-0" fill="none" stroke="currentColor"
+                            viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z">
+                            </path>
+                        </svg>
+                        <span>
+                            {{ $errors->first() }}
+                        </span>
+                    </div>
+                @endif
                 <div class="space-y-2">
                     <label
                         class="block text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1">Email</label>
-                    <input type="email" name="email"
+                    <input type="email" name="email" value="{{ old('email') }}"
                         class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-5 py-4 text-sm focus:ring-4 focus:ring-green-500/10 focus:border-green-500 transition-all outline-none"
                         placeholder="user@smartani.com" required>
                 </div>
+
                 <div class="space-y-2">
                     <label
                         class="block text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1">Password</label>
@@ -218,17 +235,12 @@
                         class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-5 py-4 text-sm focus:ring-4 focus:ring-green-500/10 focus:border-green-500 transition-all outline-none"
                         placeholder="••••••••" required>
                 </div>
+
                 <button type="submit"
                     class="w-full bg-slate-900 hover:bg-green-700 text-white font-bold py-4 rounded-2xl transition-all duration-300 shadow-xl flex items-center justify-center gap-3 active:scale-[0.98]">
                     Akses Dashboard
                 </button>
             </form>
-            <div class="mt-12 text-center">
-                <p class="text-sm text-slate-400 font-medium">
-                    Belum punya akun? <a href="#"
-                        class="text-slate-900 font-bold hover:underline underline-offset-4">Ajukan Kemitraan</a>
-                </p>
-            </div>
         </div>
     </div>
 
