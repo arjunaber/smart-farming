@@ -180,10 +180,8 @@
             {{-- Card Loader dengan Lottie Player --}}
             <div
                 class="flex flex-col items-center p-6 rounded-[2.5rem] bg-white/80 dark:bg-slate-900/80 shadow-xl border border-slate-100 dark:border-slate-800 backdrop-blur-md max-w-xs text-center">
-                <div class="w-32 h-32 mb-2">
-                    <dotlottie-player src="{{ asset('loading.lottie') }}" background="transparent" speed="1" loop
-                        autoplay>
-                    </dotlottie-player>
+                <div class="w-16 h-16 mb-4">
+                    <div class="w-full h-full border-4 border-slate-200 dark:border-slate-700 border-t-blue-500 rounded-full animate-spin"></div>
                 </div>
                 <p class="text-xs font-black text-slate-700 dark:text-white uppercase tracking-widest animate-pulse">
                     Sinkronisasi Data AGA...

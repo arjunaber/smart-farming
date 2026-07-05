@@ -178,7 +178,7 @@ class ChatbotController extends Controller
          * =========================
          */
         try {
-            $response = Http::timeout(30)
+            $response = Http::timeout(config('rag.timeout'))
                 ->withToken(config('rag.token'))
                 ->asForm()
                 ->post(config('rag.endpoint') . '/recommend', [

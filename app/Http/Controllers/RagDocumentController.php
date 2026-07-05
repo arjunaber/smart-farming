@@ -60,18 +60,6 @@ class RagDocumentController extends Controller
         ]);
 
         $doc = $this->storeDocument($request->file('rag_document'));
-        try {
-            Http::withToken(config('rag.token')) // Mengambil RAG_SERVICE_TOKEN
-                ->timeout(config('rag.timeout')) // Mengambil RAG_TIMEOUT
-                ->post(config('rag.endpoint') . '/api/process-document', [
-                    'document_id' => $doc->id,
-                    'file_path'   => $doc->file_path,
-                    'collection'  => $doc->collection_name
-                ]);
-        } catch (\Exception $e) {
-            // Log error jika Python service mati, tapi Laravel tetap aman
-            Log::error("Gagal trigger Python RAG: " . $e->getMessage());
-        }
 
         return redirect()->route('rag.index')
             ->with('success', "Dokumen \"{$doc->original_filename}\" berhasil diunggah dan sedang antri untuk diproses.");
