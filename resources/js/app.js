@@ -1,7 +1,5 @@
 import "./bootstrap";
 import Alpine from "@alpinejs/csp";
-// 1. TAMBAHKAN IMPORT INI DI ATAS ALPINE
-import "@dotlottie/player-component";
 
 document.addEventListener("alpine:init", () => {
     // Kode darkModeHandler kamu tetap di sini, jangan diubah
