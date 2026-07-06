@@ -1,0 +1,33 @@
+name: Deploy Laravel
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Deploy
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.SSH_HOST_LARAVEL }}
+          username: ${{ secrets.SSH_USER_LARAVEL }}
+          key: ${{ secrets.SSH_KEY_LARAVEL }}
+          script: |
+            cd /var/www/smart-farming
+
+            git pull origin main
+
+            composer install --no-dev --optimize-autoloader
+
+            php artisan optimize:clear
+            php artisan migrate --force
+            php artisan config:cache
+            php artisan route:cache
+            php artisan view:cache
+
+            sudo systemctl restart php8.3-fpm
+            sudo systemctl restart nginx
