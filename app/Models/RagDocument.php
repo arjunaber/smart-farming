@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 
 class RagDocument extends Model
@@ -133,5 +135,21 @@ class RagDocument extends Model
     public function isProcessed(): bool
     {
         return $this->status === self::STATUS_PROCESSED;
+    }
+
+    // ------------------------------------------------------------------
+    // Boot
+    // ------------------------------------------------------------------
+    protected static function booted(): void
+    {
+        static::deleted(function (self $document) {
+            try {
+                Http::withToken(config('rag.token'))
+                    ->timeout(config('rag.timeout', 5))
+                    ->delete(config('rag.endpoint') . '/rag/documents/' . $document->id);
+            } catch (\Exception $e) {
+                Log::warning("Failed to notify RAG service about deleted document {$document->id}: {$e->getMessage()}");
+            }
+        });
     }
 }
