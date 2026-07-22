@@ -227,26 +227,17 @@
                             <p class="text-[10px] font-black text-green-500 uppercase tracking-[0.3em] mb-6">AGA Smart
                                 Farming</p>
 
-                            @php
-                                $device = \App\Models\IotDevice::where('lahan_id', $lahan->id)->first();
-                                $latestMetric = $device
-                                    ? \App\Models\EnvironmentalMetric::where('iot_device_id', $device->id)
-                                        ->latest('recorded_at')
-                                        ->first()
-                                    : null;
-                            @endphp
-
                             <div class="space-y-6">
                                 <div>
                                     <div class="flex justify-between mb-2">
                                         <span class="text-xs text-slate-400 font-bold">Kelembapan Tanah</span>
                                         <span class="text-lg font-mono font-black text-white">
-                                            {{ $latestMetric ? $latestMetric->soil_moisture . '%' : 'N/A' }}
+                                            {{ $sensorData ? $sensorData->humidity . '%' : '--' }}
                                         </span>
                                     </div>
                                     <div class="w-full bg-slate-800 h-2 rounded-full">
                                         <div class="bg-green-500 h-full rounded-full"
-                                            style="width: {{ $latestMetric ? $latestMetric->soil_moisture : 0 }}%"></div>
+                                            style="width: {{ $sensorData ? $sensorData->humidity : 0 }}%"></div>
                                     </div>
                                 </div>
 
@@ -254,12 +245,12 @@
                                     <div class="flex justify-between mb-2">
                                         <span class="text-xs text-slate-400 font-bold">Suhu Lingkungan</span>
                                         <span class="text-lg font-mono font-black text-white">
-                                            {{ $latestMetric ? $latestMetric->temperature . '°C' : 'N/A' }}
+                                            {{ $temp ?? '--' }}°C
                                         </span>
                                     </div>
                                     <div class="w-full bg-slate-800 h-2 rounded-full">
                                         <div class="bg-orange-500 h-full rounded-full"
-                                            style="width: {{ $latestMetric ? min($latestMetric->temperature * 2, 100) : 0 }}%">
+                                            style="width: {{ is_numeric($temp ?? '--') ? min(($temp) * 2, 100) : 0 }}%">
                                         </div>
                                     </div>
                                 </div>
@@ -268,7 +259,7 @@
                                     @if ($device)
                                         <span class="flex h-2 w-2 rounded-full bg-green-500 mr-3 animate-ping"></span>
                                         <p class="text-[9px] text-slate-400 font-black tracking-widest uppercase">
-                                            Alat: {{ $device->device_name }} (Online)
+                                            Alat: {{ $device->device_name ?? $device->device_uid }} (Online)
                                         </p>
                                     @else
                                         <span class="flex h-2 w-2 rounded-full bg-red-500 mr-3"></span>
