@@ -205,7 +205,7 @@
                                             {{ $entry->title }} ({{ ucfirst($entry->jenis_kegiatan) }})
                                         </h4>
                                         <p class="text-xs text-slate-500 dark:text-slate-400 mt-1 italic leading-relaxed">
-                                            "{: $entry->description :}"
+                                            {{ $entry->description }}
                                         </p>
                                         @if ($entry->kuantitas)
                                             <span class="text-[10px] text-slate-400 font-bold mt-1">Kuantitas:
