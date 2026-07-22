@@ -240,6 +240,10 @@
                     class="w-full bg-slate-900 hover:bg-green-700 text-white font-bold py-4 rounded-2xl transition-all duration-300 shadow-xl flex items-center justify-center gap-3 active:scale-[0.98]">
                     Akses Dashboard
                 </button>
+
+                <p class="text-center text-sm text-slate-500 mt-4">
+                    Belum punya akun? <a href="{{ route('register') }}" class="font-bold text-green-600 hover:text-green-700">Daftar sekarang</a>
+                </p>
             </form>
         </div>
     </div>

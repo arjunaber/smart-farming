@@ -69,27 +69,51 @@ class LahanController extends Controller
         '32.74.01.1001' => 'Kota Cirebon (Kejaksan)',
     ];
 
-   public function index()
-{
-    $petani = Auth::user()->petani;
+    public function index()
+    {
+        $user = Auth::user();
+        $isAdmin = $user->role === 'super_admin';
 
-    $lahan = $petani
-        ? $petani->lahan()
-        ->with(['komoditas'])
-        ->withCount(['siklusTanam as logbook_entries_count' => function ($query) {
-            $query->leftJoin('logbook_entries', 'siklus_tanam.id', '=', 'logbook_entries.siklus_tanam_id')
-                ->select(DB::raw('count(logbook_entries.id)'));
-        }])
-        ->latest()
-        ->paginate(10)
-        // Ganti collect() dengan Paginator kosong agar fungsi links() di Blade tetap aman
-        : new \Illuminate\Pagination\LengthAwarePaginator([], 0, 10, 1, [
-            'path' => request()->url(),
-            'query' => request()->query()
-        ]);
+        if ($isAdmin) {
+            $lahan = Lahan::with(['komoditas'])
+                ->withCount(['siklusTanam as logbook_entries_count' => function ($q) {
+                    $q->leftJoin('logbook_entries', 'siklus_tanam.id', '=', 'logbook_entries.siklus_tanam_id')
+                        ->select(DB::raw('count(logbook_entries.id)'));
+                }])
+                ->latest()
+                ->paginate(10);
 
-    return view('lahan.index', compact('lahan'));
-}
+            $allLahan = Lahan::all();
+        } else {
+            $petani = $user->petani;
+
+            if (!$petani) {
+                $lahan = new \Illuminate\Pagination\LengthAwarePaginator([], 0, 10, 1, [
+                    'path' => request()->url(),
+                    'query' => request()->query()
+                ]);
+                $totalLuas = 0;
+                $aktifCount = 0;
+                return view('lahan.index', compact('lahan', 'totalLuas', 'aktifCount'));
+            }
+
+            $lahan = $petani->lahan()
+                ->with(['komoditas'])
+                ->withCount(['siklusTanam as logbook_entries_count' => function ($q) {
+                    $q->leftJoin('logbook_entries', 'siklus_tanam.id', '=', 'logbook_entries.siklus_tanam_id')
+                        ->select(DB::raw('count(logbook_entries.id)'));
+                }])
+                ->latest()
+                ->paginate(10);
+
+            $allLahan = $petani->lahan()->get();
+        }
+
+        $totalLuas = $allLahan->sum('luas');
+        $aktifCount = $allLahan->where('status', 'Aktif')->count();
+
+        return view('lahan.index', compact('lahan', 'totalLuas', 'aktifCount'));
+    }
 
     public function create()
     {
@@ -102,6 +126,10 @@ class LahanController extends Controller
     public function store(Request $request)
     {
         $petani = Auth::user()->petani;
+        if (!$petani) {
+            return redirect()->back()->withInput()->with('error', 'Profil petani tidak ditemukan. Hubungi admin.');
+        }
+
         $validated = $request->validate([
             'nama_lahan'          => 'required|string|max:150',
             'lokasi'              => 'required|string',
@@ -168,6 +196,10 @@ class LahanController extends Controller
 
     private function authorizeOwner(Lahan $lahan)
     {
+        if (Auth::user()->role === 'super_admin') {
+            return;
+        }
+
         $petani = Auth::user()->petani;
 
         if (!$petani || $lahan->petani_id !== $petani->id) {

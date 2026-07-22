@@ -15,7 +15,7 @@ class SensorController extends Controller
             'serial_number'   => 'required|string', // Menggunakan nomor seri hardware unik alat IoT
             'temperature'     => 'required|numeric',
             'humidity'        => 'required|numeric', // Kelembapan udara sekitar
-            'ph'   => 'required|numeric', // Kelembapan tanah
+            'ph'   => 'required|numeric', // pH tanah
             'light_intensity' => 'required|numeric', // Intensitas cahaya (lux)
         ]);
 

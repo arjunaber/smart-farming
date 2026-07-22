@@ -6,7 +6,7 @@
         <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
             <div>
                 <h1 class="text-3xl font-black text-slate-900 dark:text-white tracking-tight">Portofolio Lahan</h1>
-                <p class="text-slate-500 dark:text-slate-400 mt-1">Menampilkan {{ $lahan->count() }} lokasi di halaman ini.
+                <p class="text-slate-500 dark:text-slate-400 mt-1">Menampilkan {{ $lahan->total() }} lokasi di halaman ini.
                 </p>
             </div>
             <a href="{{ route('lahan.create') }}"
@@ -23,7 +23,7 @@
             <div
                 class="bg-white dark:bg-slate-900 p-6 rounded-[2rem] border border-slate-100 dark:border-slate-800 shadow-sm">
                 <p class="text-sm font-bold text-slate-400 uppercase tracking-widest">Total Area</p>
-                <p class="text-2xl font-black text-slate-800 dark:text-white">{{ $lahan->sum('luas') }}
+                <p class="text-2xl font-black text-slate-800 dark:text-white">{{ $totalLuas }}
                     <span class="text-sm font-medium text-slate-500">Hektar</span>
                 </p>
             </div>
@@ -31,7 +31,7 @@
                 class="bg-white dark:bg-slate-900 p-6 rounded-[2rem] border border-slate-100 dark:border-slate-800 shadow-sm">
                 <p class="text-sm font-bold text-slate-400 uppercase tracking-widest">Lahan Aktif</p>
                 <p class="text-2xl font-black text-green-600">
-                    {{ $lahan->where('status', 'Aktif')->count() }}
+                    {{ $aktifCount }}
                     <span class="text-sm font-medium text-slate-500">Lokasi</span>
                 </p>
             </div>
