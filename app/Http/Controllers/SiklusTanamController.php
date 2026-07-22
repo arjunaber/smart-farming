@@ -13,38 +13,74 @@ class SiklusTanamController extends Controller
 {
     public function index()
     {
-        $petani = Auth::user()->petani;
-        $siklus = $petani
-            ? SiklusTanam::with(['lahan', 'komoditas'])
-            ->whereIn('lahan_id', $petani->lahan()->pluck('id'))
-            ->latest()
-            ->paginate(10)
-            // Ganti collect() dengan Paginator kosong agar fungsi links() di Blade tetap aman
-            : new \Illuminate\Pagination\LengthAwarePaginator([], 0, 10, 1, [
-            'path' => request()->url(),
-            'query' => request()->query()
-        ]);
+        $isAdmin = Auth::user()->role === 'super_admin';
+
+        if ($isAdmin) {
+            $siklus = SiklusTanam::with(['lahan', 'komoditas'])
+                ->latest()
+                ->paginate(10);
+        } else {
+            $petani = Auth::user()->petani;
+            $siklus = $petani
+                ? SiklusTanam::with(['lahan', 'komoditas'])
+                ->whereIn('lahan_id', $petani->lahan()->pluck('id'))
+                ->latest()
+                ->paginate(10)
+                : new \Illuminate\Pagination\LengthAwarePaginator([], 0, 10, 1, [
+                'path' => request()->url(),
+                'query' => request()->query()
+            ]);
+        }
 
         return view('siklus_tanam.index', compact('siklus'));
     }
 
     public function create()
     {
-        $petani = Auth::user()->petani;
-        if (!$petani) {
-            return redirect()->back()->with('error', 'Profil petani tidak ditemukan.');
+        $user = Auth::user();
+        $isAdmin = $user->role === 'super_admin';
+
+        if ($isAdmin) {
+            $lahanList = Lahan::all();
+        } else {
+            $petani = $user->petani;
+            if (!$petani) {
+                return redirect()->back()->with('error', 'Profil petani tidak ditemukan.');
+            }
+            $lahanList = $petani->lahan()->get();
         }
 
-        $lahanList = $petani->lahan()->get();
         $komoditasList = MasterKomoditas::all();
 
         return view('siklus_tanam.create', compact('lahanList', 'komoditasList'));
     }
 
+    public function show(SiklusTanam $siklusTanam)
+    {
+        $user = Auth::user();
+        if ($user->role !== 'super_admin') {
+            $petani = $user->petani;
+            if (!$petani || $siklusTanam->lahan->petani_id !== $petani->id) {
+                abort(403);
+            }
+        }
+
+        $siklusTanam->load(['lahan', 'komoditas', 'logbookEntries' => fn($q) => $q->latest()]);
+
+        return view('siklus_tanam.show', compact('siklusTanam'));
+    }
+
     public function store(Request $request)
     {
-        $petani = Auth::user()->petani;
-        $lahanIds = $petani ? $petani->lahan()->pluck('id')->toArray() : [];
+        $user = Auth::user();
+        $isAdmin = $user->role === 'super_admin';
+
+        if ($isAdmin) {
+            $lahanIds = Lahan::pluck('id')->toArray();
+        } else {
+            $petani = $user->petani;
+            $lahanIds = $petani ? $petani->lahan()->pluck('id')->toArray() : [];
+        }
 
         $request->validate([
             'lahan_id' => 'required|in:' . implode(',', $lahanIds),

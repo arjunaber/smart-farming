@@ -7,94 +7,6 @@
         <p class="text-slate-500 dark:text-slate-400 text-sm mt-1">Pantau siklus tanaman dan perkiraan tanggal panen.</p>
     </div>
 
-<<<<<<< Updated upstream
-    <!-- Timeline Banner -->
-    <div class="bg-white dark:bg-slate-900 rounded-[2.5rem] border border-slate-100 dark:border-slate-800 p-8 shadow-sm mb-8">
-        <div class="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
-            <div>
-                <h1 class="text-2xl font-black text-slate-800 dark:text-white">Manajemen Tanaman</h1>
-                <p class="text-slate-500 text-sm">Kelola data lahan dan prediksi panen secara real-time.</p>
-            </div>
-            <button @click="openAddModal()"
-                class="bg-green-600 hover:bg-green-700 text-white px-5 py-2.5 rounded-2xl font-bold transition-all flex items-center gap-2 shadow-lg shadow-green-200">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path d="M12 6v6m0 0v6m0-6h6m-6 0H6" stroke-width="2" stroke-linecap="round" />
-                </svg>
-                Tambah Data
-            </button>
-        </div>
-
-        <div
-            class="bg-white dark:bg-slate-900 rounded-[2rem] border border-slate-100 dark:border-slate-800 shadow-sm overflow-hidden">
-            <div class="p-6 overflow-x-auto">
-                <table id="tableTanaman" class="w-full text-sm text-left text-slate-500">
-                    <thead class="text-xs text-slate-400 uppercase bg-slate-50 dark:bg-slate-800">
-                        <tr>
-                            <th class="px-6 py-4">Nama Tanaman</th>
-                            <th class="px-6 py-4">Tgl Tanam</th>
-                            <th class="px-6 py-4">Prediksi Panen</th>
-                            <th class="px-6 py-4 text-center">Aksi</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
-                        @forelse ($tanaman as $t)
-                            <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
-                                <td class="px-6 py-4 font-bold text-slate-700 dark:text-white">{{ $t->nama_tanaman }}</td>
-                                <td class="px-6 py-4">{{ \Carbon\Carbon::parse($t->tanggal_tanam)->format('d M Y') }}</td>
-                                <td class="px-6 py-4 font-bold text-green-600">
-                                    Tercepat: {{ $t->panen_tercepat ?? '-' }}
-                                    <div class="text-xs text-slate-400">
-                                        Maksimal: {{ $t->panen_terlama ?? '-' }}
-                                    </div>
-                                </td>
-                                <td class="px-6 py-4 flex items-center justify-center gap-2">
-                                    <button @click="openPredictModal({{ json_encode($t) }})"
-                                        class="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-all">
-                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" stroke-width="2" />
-                                            <path
-                                                d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
-                                                stroke-width="2" />
-                                        </svg>
-                                    </button>
-                                    <button @click="openEditModal({{ json_encode($t) }})"
-                                        class="p-2 text-amber-600 hover:bg-amber-50 rounded-lg transition-all">
-                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path
-                                                d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
-                                                stroke-width="2" />
-                                        </svg>
-                                    </button>
-                                    <button @click="confirmDelete('{{ route('tanaman.destroy', $t->id) }}')"
-                                        class="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-all">
-                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path
-                                                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                                                stroke-width="2" />
-                                        </svg>
-                                    </button>
-                                </td>
-                            </tr>
-                        @empty
-                            <tr>
-                                <td colspan="4" class="p-10 text-center text-slate-400">Data kosong.</td>
-                            </tr>
-                        @endforelse
-                    </tbody>
-                </table>
-            </div>
-        </div>
-
-        <!-- Custom Progress Bar -->
-        <div class="relative w-full h-4 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden mb-2">
-            <div class="absolute top-0 left-0 h-full bg-gradient-to-r from-green-400 to-green-600 rounded-full" style="width: 37%"></div>
-        </div>
-        <div class="flex justify-between text-xs font-bold text-slate-400">
-            <span>Penanaman</span>
-            <span class="text-green-600 dark:text-green-400">Vegetatif</span>
-            <span>Reproduktif</span>
-            <span>Pematangan</span>
-=======
     <div class="max-w-6xl mx-auto space-y-6" x-data="tanamanManager()">
         <div class="flex justify-between items-center mb-8">
             <div>
@@ -174,7 +86,7 @@
             <div class="bg-white rounded-[2.5rem] p-8 w-full max-w-2xl relative" @click.away="showLogbookModal = false">
                 <h2 class="text-xl font-black mb-1">Riwayat Siklus Tanam</h2>
                 <p class="text-sm text-green-600 font-bold mb-6" x-text="logbookTitle"></p>
-                
+
                 <div class="space-y-4 max-h-80 overflow-y-auto pr-2">
                     <div class="border-l-2 border-green-500 pl-4 pb-4">
                         <p class="text-xs font-bold text-slate-400">12 Maret 2026</p>
@@ -195,12 +107,11 @@
                     + Catat Aktivitas Baru
                 </button>
             </div>
->>>>>>> Stashed changes
         </div>
-
     </div>
 
-<<<<<<< Updated upstream
+</div>
+
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
         <!-- Task Card 1 -->
         <div class="bg-white dark:bg-slate-900 rounded-[2rem] border border-slate-100 dark:border-slate-800 p-6 shadow-sm">
@@ -234,34 +145,4 @@
             </div>
         </div>
     </div>
-</div>
-=======
-    <script>
-        document.addEventListener('alpine:init', () => {
-            Alpine.data('tanamanManager', () => ({
-                showFormModal: false,
-                showLogbookModal: false,
-                isEdit: false,
-                logbookTitle: '',
-                formData: { id: null, nama_tanaman: '', tanggal_tanam: '' },
-
-                openAddModal() {
-                    this.isEdit = false;
-                    this.formData = { id: null, nama_tanaman: '', tanggal_tanam: '' };
-                    this.showFormModal = true;
-                },
-                
-                openLogbookModal(nama) {
-                    this.logbookTitle = `Komoditas: ${nama}`;
-                    this.showLogbookModal = true;
-                },
-
-                submitForm() {
-                    // Logic submit form yang sama dengan source asli Anda
-                    document.getElementById('mainForm').submit();
-                }
-            }));
-        });
-    </script>
->>>>>>> Stashed changes
 @endsection

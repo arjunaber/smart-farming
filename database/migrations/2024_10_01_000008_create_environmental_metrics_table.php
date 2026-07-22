@@ -17,8 +17,8 @@ return new class extends Migration
             $table->foreignId('iot_device_id')->constrained('iot_devices')->onDelete('cascade');
             $table->float('temperature');
             $table->float('humidity');
-            $table->float('ph_level');
-            $table->float('electrical_conductivity');
+            $table->float('ph');
+            $table->float('light_intensity');
             // Gunakan timestamps standar Laravel atau recorded_at
             $table->timestamp('recorded_at')->useCurrent();
         });
