@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\Iot\RegisterController;
 use App\Http\Controllers\Api\Iot\ActivateController;
 use App\Http\Controllers\Api\Iot\ReadingController;
 use App\Http\Controllers\Api\Iot\HeartbeatController;
+use App\Http\Controllers\Api\Iot\LahanController;
 
 
 Route::middleware('rag.service')->prefix('rag')->name('api.rag.')->group(function () {
@@ -28,5 +29,6 @@ Route::prefix('iot')->name('iot.')->group(function () {
     Route::middleware('device.token')->group(function () {
         Route::post('/readings', [ReadingController::class, 'store'])->name('readings.store');
         Route::post('/heartbeat', [HeartbeatController::class, 'heartbeat'])->name('heartbeat');
+        Route::post('/lahan', [LahanController::class, 'show'])->name('lahan.show');
     });
 });
