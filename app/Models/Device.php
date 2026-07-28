@@ -20,12 +20,16 @@ class Device extends Model
         'last_seen',
         'approved_at',
         'token_retrieved_at',
+        'placement_lat',
+        'placement_lng',
     ];
 
     protected $casts = [
         'approved_at' => 'datetime',
         'token_retrieved_at' => 'datetime',
         'last_seen' => 'datetime',
+        'placement_lat' => 'decimal:7',
+        'placement_lng' => 'decimal:7',
     ];
 
     public function lahan()

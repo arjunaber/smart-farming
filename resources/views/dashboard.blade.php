@@ -1,5 +1,7 @@
 @extends('layouts.app')
 
+@php $isAdmin = Auth::user()->role === 'super_admin'; @endphp
+
 @section('content')
     {{-- Inisialisasi Alpine.js untuk mengatur loading selama 3 detik --}}
     <div x-data="loadingScreen" class="relative min-h-screen">
@@ -91,7 +93,7 @@
                 </div>
 
                 {{-- Visualisasi Peta Polygon --}}
-                <div onclick="openMapModal()"
+                    <div onclick="openMapModal()"
                     class="bg-white dark:bg-slate-900 rounded-[2.5rem] border border-slate-100 dark:border-slate-800 p-4 shadow-sm overflow-hidden cursor-pointer hover:border-blue-500 transition-all group/map">
                     <div class="flex justify-between items-center mb-3 px-2">
                         <h3
@@ -99,7 +101,7 @@
                             Peta Area Lahan</h3>
                         <span
                             class="text-[10px] bg-blue-100 text-blue-600 dark:bg-blue-500/20 px-2 py-0.5 rounded-lg font-bold group-hover/map:bg-blue-500 group-hover/map:text-white transition-all">KLIK
-                            UNTUK EDIT</span>
+                            UNTUK {{ $isAdmin ? 'EDIT' : 'LIHAT' }}</span>
                     </div>
                     <div id="mapPolygon"
                         class="h-48 w-full rounded-[1.5rem] z-0 border border-slate-100 dark:border-slate-800 pointer-events-none">
@@ -248,69 +250,103 @@
         </div>
     </div>
 
-    {{-- Modal Gambar/Edit Polygon Lahan --}}
+    {{-- Modal Gambar/Edit Polygon + IoT Device Placement --}}
     <div id="mapModal" class="hidden fixed inset-0 w-screen h-screen transition-all duration-300"
         style="z-index: 99999;">
         <div class="absolute inset-0 bg-slate-950/60 backdrop-blur-sm" onclick="closeMapModal()"></div>
         <div class="relative flex items-center justify-center min-h-screen p-4 pointer-events-none">
             <div
-                class="bg-white dark:bg-slate-900 rounded-[2.5rem] w-full max-w-2xl shadow-2xl border border-slate-200 dark:border-slate-800 pointer-events-auto overflow-hidden flex flex-col">
+                class="bg-white dark:bg-slate-900 rounded-[2.5rem] w-full max-w-5xl shadow-2xl border border-slate-200 dark:border-slate-800 pointer-events-auto overflow-hidden flex flex-col">
 
-                {{-- HEADER MODAL (Rapi tanpa tombol IoT) --}}
+                {{-- HEADER --}}
                 <div class="p-6 border-b border-slate-100 dark:border-slate-800 flex justify-between items-start">
                     <div>
-                        <h3 class="text-lg font-black text-slate-800 dark:text-white">Atur Koordinat Lahan</h3>
-                        <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Klik minimal 3 titik di peta untuk
-                            membentuk area lahan.</p>
+                        <h3 class="text-lg font-black text-slate-800 dark:text-white">{{ $isAdmin ? 'Atur Lahan & Perangkat IoT' : 'Peta Lahan & Perangkat IoT' }}</h3>
+                        <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">{{ $isAdmin ? 'Atur polygon lahan dan tempatkan perangkat IoT yang tersedia.' : 'Lihat posisi perangkat IoT di lahan Anda.' }}</p>
                     </div>
-
+                    @if($isAdmin)
                     <button type="button" onclick="clearDraftPolygon()"
                         class="text-xs font-bold text-red-500 hover:text-red-600 bg-red-50 dark:bg-red-500/10 px-3 py-1.5 rounded-xl transition-colors shrink-0">
                         Reset Titik
                     </button>
+                    @endif
                 </div>
 
-                {{-- Container Peta di Dalam Modal --}}
-                <div class="relative flex-1">
-                    <div id="mapDraw" class="h-96 w-full z-0"></div>
-                    <div
-                        class="absolute bottom-4 left-4 z-[1000] bg-white/90 dark:bg-slate-900/90 backdrop-blur px-3 py-1.5 rounded-xl text-[10px] font-bold text-slate-700 dark:text-slate-300 border border-slate-100 dark:border-slate-800 shadow-sm">
-                        <span id="pointCounter">0</span> Titik Terpilih
+                {{-- BODY: Map Kiri + Device List Kanan (hanya admin) --}}
+                <div class="flex flex-col lg:flex-row">
+                    {{-- KIRI: Peta --}}
+                    <div class="relative flex-1 min-h-[400px]">
+                        <div id="mapDraw" class="h-full w-full z-0 absolute inset-0"></div>
+                        @if($isAdmin)
+                        <div class="absolute bottom-4 left-4 z-[1000] bg-white/90 dark:bg-slate-900/90 backdrop-blur px-3 py-1.5 rounded-xl text-[10px] font-bold text-slate-700 dark:text-slate-300 border border-slate-100 dark:border-slate-800 shadow-sm">
+                            <span id="pointCounter">0</span> Titik Terpilih
+                        </div>
+                        @endif
                     </div>
+
+                    @if($isAdmin)
+                    {{-- KANAN: Daftar Device (hanya admin) --}}
+                    <div class="w-full lg:w-72 border-t lg:border-t-0 lg:border-l border-slate-100 dark:border-slate-800 flex flex-col">
+                        <div class="p-4 border-b border-slate-100 dark:border-slate-800">
+                            <p class="text-xs font-bold text-slate-400 uppercase tracking-widest">Perangkat IoT Tersedia</p>
+                            <p class="text-[10px] text-slate-400 mt-0.5">Klik device lalu klik peta untuk menempatkan.</p>
+                        </div>
+                        <div id="devicePlacementList" class="flex-1 overflow-y-auto p-3 space-y-2 max-h-64">
+                            @forelse($lahanDevices as $device)
+                                <div class="flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all hover:border-green-300 device-placement-item {{ $device->placement_lat && $device->placement_lng ? 'border-green-400 bg-green-50 dark:bg-green-900/10 dark:border-green-700' : 'border-slate-200 dark:border-slate-700' }}"
+                                    data-device-id="{{ $device->id }}"
+                                    data-device-name="{{ $device->device_name ?? $device->device_uid }}"
+                                    data-placement-lat="{{ $device->placement_lat }}"
+                                    data-placement-lng="{{ $device->placement_lng }}">
+                                    <div class="w-8 h-8 rounded-lg bg-violet-100 dark:bg-violet-900/30 flex items-center justify-center text-violet-600 dark:text-violet-400 flex-shrink-0">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3H5a2 2 0 00-2 2v4m6-6h10a2 2 0 012 2v4M9 3v18m0 0h10a2 2 0 002-2V9M9 21H5a2 2 0 01-2-2V9m0 0h18"></path>
+                                        </svg>
+                                    </div>
+                                    <div class="flex-1 min-w-0">
+                                        <p class="text-xs font-bold text-slate-800 dark:text-white truncate">{{ $device->device_name ?? $device->device_uid }}</p>
+                                        <p class="text-[10px] text-slate-400">{{ $device->placement_lat ? 'Sudah ditempatkan' : 'Belum ditempatkan' }}</p>
+                                    </div>
+                                    @if($device->placement_lat && $device->placement_lng)
+                                        <span class="text-green-600 dark:text-green-400">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
+                                            </svg>
+                                        </span>
+                                    @endif
+                                </div>
+                            @empty
+                                <p class="text-xs text-slate-400 text-center py-6">Tidak ada perangkat aktif untuk lahan ini.</p>
+                            @endforelse
+                        </div>
+                    </div>
+                    @endif
                 </div>
 
-                {{-- FOOTER MODAL (Tombol IoT Kiri Bawah, Aksi Kanan Bawah) --}}
-                <div
-                    class="p-6 bg-slate-50 dark:bg-slate-800/30 flex flex-col sm:flex-row gap-4 justify-between items-center border-t border-slate-100 dark:border-slate-800">
-
-                    {{-- TOMBOL IOT DI KIRI BAWAH --}}
-                    <a href="{{ url('/iot-device/create' . (isset($lahan) ? '?lahan_id=' . $lahan->id : '')) }}"
-                        class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-3 bg-blue-500 hover:bg-blue-600 text-white text-xs font-bold rounded-xl shadow-md shadow-blue-500/20 transition-all uppercase tracking-wider">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z">
-                            </path>
-                        </svg>
-                        + Tambah Alat IoT
-                    </a>
-
-                    {{-- TOMBOL BATAL & SIMPAN DI KANAN BAWAH --}}
-                    <div class="flex gap-3 w-full sm:w-auto">
+                {{-- FOOTER --}}
+                <div class="p-6 bg-slate-50 dark:bg-slate-800/30 flex flex-col sm:flex-row gap-4 justify-between items-center border-t border-slate-100 dark:border-slate-800">
+                    @if($isAdmin)
+                    <div class="text-[10px] text-slate-400">
+                        <span id="placementStatus">Klik device di panel kanan, lalu klik peta untuk menempatkan.</span>
+                    </div>
+                    @endif
+                    <div class="flex gap-3 w-full {{ $isAdmin ? 'sm:w-auto' : 'sm:w-full justify-center' }}">
                         <button type="button" onclick="closeMapModal()"
-                            class="flex-1 sm:flex-none px-5 py-3 rounded-xl bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-bold text-sm hover:bg-slate-300 dark:hover:bg-slate-700 transition-colors">
-                            Batal
+                            class="{{ $isAdmin ? 'flex-1 sm:flex-none' : '' }} px-5 py-3 rounded-xl bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-bold text-sm hover:bg-slate-300 dark:hover:bg-slate-700 transition-colors">
+                            Tutup
                         </button>
+                        @if($isAdmin)
                         <form id="savePolygonForm" action="/lahan/{{ $lahan->id ?? '' }}/update-polygon" method="POST"
                             class="flex-1 sm:flex-none">
                             @csrf
                             @method('PUT')
-                            {{-- Input hidden untuk menampung json koordinat --}}
                             <input type="hidden" name="polygon_coordinates" id="polygonCoordinatesInput">
                             <button type="submit" id="btnSavePolygon" disabled
                                 class="w-full px-5 py-3 rounded-xl bg-green-500 text-white font-bold text-sm hover:bg-green-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
                                 Simpan Area
                             </button>
                         </form>
+                        @endif
                     </div>
                 </div>
 
@@ -376,12 +412,13 @@
         })
     </script>
     <script>
+        const isAdmin = @json($isAdmin);
         let mainMap, drawMap;
         let draftCoordinates = [];
         let draftMarkers = [];
         let draftPolygonLayer = null;
 
-        let rawCoords = @json($lahan->polygon_coordinates ?? []);
+        let rawCoords = @json($lahan?->polygon_coordinates ?? []);
 
         if (typeof rawCoords === 'string' && rawCoords.trim() !== '') {
             try {
@@ -391,6 +428,25 @@
             }
         }
         const initialCoords = Array.isArray(rawCoords) ? rawCoords : [];
+
+        // ─── Data Device untuk Marker ──────────────────────────────────────────────
+        const devicePlacements = @json($devicePlacements ?? []);
+
+        function addDeviceMarkerToMap(map, placement) {
+            if (!map || !placement.lat || !placement.lng) return null;
+            const marker = L.marker([parseFloat(placement.lat), parseFloat(placement.lng)], {
+                icon: L.divIcon({
+                    className: 'device-marker',
+                    html: `<div class="w-8 h-8 bg-violet-600 text-white rounded-full flex items-center justify-center text-xs font-bold shadow-lg border-2 border-white" title="${placement.name}">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3H5a2 2 0 00-2 2v4m6-6h10a2 2 0 012 2v4M9 3v18m0 0h10a2 2 0 002-2V9M9 21H5a2 2 0 01-2-2V9m0 0h18"/></svg>
+                    </div>`,
+                    iconSize: [32, 32],
+                    iconAnchor: [16, 16],
+                })
+            }).addTo(map);
+            marker.bindTooltip(placement.name, { direction: 'top', offset: [0, -20] });
+            return marker;
+        }
 
         // ─── Inisialisasi Peta Kecil ───────────────────────────────────────────────
         document.addEventListener('DOMContentLoaded', function() {
@@ -417,6 +473,8 @@
                 }).addTo(mainMap);
 
                 mainMap.fitBounds(polygon.getBounds());
+
+                devicePlacements.forEach(p => addDeviceMarkerToMap(mainMap, p));
             } else {
                 mapContainer.classList.add('flex', 'items-center', 'justify-center',
                     'bg-slate-50', 'dark:bg-slate-800');
@@ -488,13 +546,52 @@
             }
         }
 
+        // ─── Device Placement (hanya admin) ────────────────────────────────────────
+        let selectedDeviceId = null;
+        let deviceMarkerLayers = [];
+
+        if (isAdmin) {
+            document.querySelectorAll('.device-placement-item').forEach(el => {
+                el.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    document.querySelectorAll('.device-placement-item').forEach(i => i.classList.remove('ring-2', 'ring-green-500'));
+                    this.classList.add('ring-2', 'ring-green-500');
+                    selectedDeviceId = this.dataset.deviceId;
+                    document.getElementById('placementStatus').textContent = 'Klik di peta untuk menempatkan "' + this.dataset.deviceName + '"';
+                });
+            });
+        }
+
+        function renderDeviceMarkers() {
+            if (drawMap) {
+                deviceMarkerLayers.forEach(m => drawMap.removeLayer(m));
+                deviceMarkerLayers = [];
+                if (isAdmin) {
+                    document.querySelectorAll('.device-placement-item').forEach(el => {
+                        const lat = el.dataset.placementLat;
+                        const lng = el.dataset.placementLng;
+                        const name = el.dataset.deviceName;
+                        if (lat && lng) {
+                            const m = addDeviceMarkerToMap(drawMap, { lat, lng, name });
+                            if (m) deviceMarkerLayers.push(m);
+                        }
+                    });
+                } else {
+                    devicePlacements.forEach(p => {
+                        const m = addDeviceMarkerToMap(drawMap, p);
+                        if (m) deviceMarkerLayers.push(m);
+                    });
+                }
+            }
+        }
+
         // ─── Fungsi Global ─────────────────────────────────────────────────────────
         window.openMapModal = function() {
             document.getElementById('mapModal').classList.remove('hidden');
 
-            draftCoordinates = JSON.parse(JSON.stringify(initialCoords));
-            if (!Array.isArray(draftCoordinates)) {
-                draftCoordinates = [];
+            if (isAdmin) {
+                draftCoordinates = JSON.parse(JSON.stringify(initialCoords));
+                if (!Array.isArray(draftCoordinates)) draftCoordinates = [];
             }
 
             if (!drawMap) {
@@ -507,29 +604,95 @@
                     subdomains: ['mt0', 'mt1', 'mt2', 'mt3'],
                 }).addTo(drawMap);
 
-                drawMap.on('click', function(e) {
-                    if (!Array.isArray(draftCoordinates)) draftCoordinates = [];
-                    draftCoordinates.push([e.latlng.lat, e.latlng.lng]);
-                    refreshDrawLayers();
-                });
+                if (isAdmin) {
+                    drawMap.on('click', function(e) {
+                        if (selectedDeviceId) {
+                            placeDeviceAt(e.latlng.lat, e.latlng.lng);
+                            return;
+                        }
+                        if (!Array.isArray(draftCoordinates)) draftCoordinates = [];
+                        draftCoordinates.push([e.latlng.lat, e.latlng.lng]);
+                        refreshDrawLayers();
+                    });
+                }
             }
 
             setTimeout(() => {
                 drawMap.invalidateSize();
 
-                if (draftCoordinates && draftCoordinates.length > 0) {
+                if (isAdmin && draftCoordinates && draftCoordinates.length > 0) {
                     refreshDrawLayers();
                     drawMap.fitBounds(L.polygon(draftCoordinates).getBounds());
+                } else if (initialCoords.length > 0) {
+                    if (isAdmin) refreshDrawLayers();
+                    else {
+                        L.polygon(initialCoords, {
+                            color: '#22c55e',
+                            fillColor: '#22c55e',
+                            fillOpacity: 0.2,
+                            weight: 2,
+                        }).addTo(drawMap);
+                    }
+                    drawMap.fitBounds(L.polygon(initialCoords).getBounds());
                 } else {
-                    refreshDrawLayers();
-                    drawMap.setView([-2.5489, 118.0149], 5); // Default view
+                    drawMap.setView([-2.5489, 118.0149], 5);
+                }
+                renderDeviceMarkers();
+                if (isAdmin) {
+                    selectedDeviceId = null;
+                    document.getElementById('placementStatus').textContent = 'Klik device di panel kanan, lalu klik peta untuk menempatkan.';
                 }
             }, 200);
         };
 
+        function placeDeviceAt(lat, lng) {
+            const lahanId = @json($lahan ? $lahan->id : 0);
+            if (!selectedDeviceId || !lahanId) return;
+
+            fetch('/lahan/' + lahanId + '/device-placement', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || '{{ csrf_token() }}'
+                },
+                body: JSON.stringify({
+                    device_id: parseInt(selectedDeviceId),
+                    placement_lat: lat,
+                    placement_lng: lng
+                })
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    const el = document.querySelector(`.device-placement-item[data-device-id="${selectedDeviceId}"]`);
+                    if (el) {
+                        el.dataset.placementLat = lat;
+                        el.dataset.placementLng = lng;
+                        el.classList.add('border-green-400', 'bg-green-50', 'dark:bg-green-900/10', 'dark:border-green-700');
+                        const badge = el.querySelector('.text-green-600') || document.createElement('span');
+                        badge.className = 'text-green-600 dark:text-green-400';
+                        badge.innerHTML = '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>';
+                        if (!el.querySelector('.text-green-600')) el.appendChild(badge);
+                        el.querySelector('p:last-child').textContent = 'Sudah ditempatkan';
+                    }
+                    renderDeviceMarkers();
+                    document.getElementById('placementStatus').textContent = 'Device berhasil ditempatkan!';
+                    selectedDeviceId = null;
+                    document.querySelectorAll('.device-placement-item').forEach(i => i.classList.remove('ring-2', 'ring-green-500'));
+                } else {
+                    alert(data.message || 'Gagal menyimpan posisi device.');
+                }
+            })
+            .catch(() => alert('Terjadi kesalahan. Coba lagi.'));
+        }
+
         window.closeMapModal = function() {
             document.getElementById('mapModal').classList.add('hidden');
-            clearDraftLayersOnly();
+            if (isAdmin) {
+                clearDraftLayersOnly();
+                selectedDeviceId = null;
+                document.querySelectorAll('.device-placement-item').forEach(i => i.classList.remove('ring-2', 'ring-green-500'));
+            }
         };
 
         window.clearDraftPolygon = function() {

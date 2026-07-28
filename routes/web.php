@@ -13,6 +13,7 @@ use App\Http\Controllers\KeuanganController;
 use App\Http\Controllers\ChatbotController;
 use App\Http\Controllers\RagDocumentController;
 use App\Http\Controllers\DiseaseController;
+use App\Http\Controllers\ProfileController;
 
 Route::get('/', [LoginController::class, 'showLogin'])->name('login');
 Route::post('/', [LoginController::class, 'login']);
@@ -29,6 +30,7 @@ Route::middleware('auth')->group(function () {
     Route::resource('lahan', LahanController::class);
     Route::resource('logbook', LogbookController::class)->only(['index', 'create', 'store', 'destroy']);
     Route::put('/lahan/{id}/update-polygon', [LahanController::class, 'updatePolygon'])->name('lahan.update-polygon');
+    Route::post('/lahan/{lahan}/device-placement', [\App\Http\Controllers\DashboardController::class, 'saveDevicePlacement'])->name('lahan.device-placement');
 
     Route::resource('siklus-tanam', SiklusTanamController::class)->names('siklus-tanam');
     Route::resource('keuangan', KeuanganController::class);
@@ -71,4 +73,6 @@ Route::middleware('auth')->group(function () {
     Route::get('/reports', function () {
         return view('reports');
     })->name('reports');
+
+    Route::get('/profile', ProfileController::class)->name('profile');
 });

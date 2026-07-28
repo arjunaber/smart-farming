@@ -100,7 +100,7 @@
                                 </td>
                                 <td class="px-8 py-6">
                                     <div class="flex items-center gap-2">
-                                        <a href="#"
+                                        <a href="{{ route('siklus-tanam.show', $item) }}"
                                             class="p-2 bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 rounded-xl hover:text-green-600 transition-colors">
                                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"

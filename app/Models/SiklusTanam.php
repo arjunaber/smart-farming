@@ -43,7 +43,7 @@ class SiklusTanam extends Model
     // Siklus merekam log insiden tak terduga (Hama/Bencana) untuk context LLM
     public function logKejadian()
     {
-        return $this->hasMany(LogClass::class, 'siklus_tanam_id'); // Hubungan ke model LogKejadian
+        return $this->hasMany(LogKejadian::class, 'siklus_tanam_id');
     }
 
     // Finansial per siklus tanam

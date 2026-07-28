@@ -22,7 +22,6 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->validateCsrfTokens(except: [
             'api/sensor'
         ]);
-        $middleware->trustProxies(at: '*'); 
         #hapus middleware diatas ketika udah production, ini buat ngatasi masalah request dari ngrok yang dianggap sebagai request dari proxy
     })
     ->withExceptions(function (Exceptions $exceptions): void {

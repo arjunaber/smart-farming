@@ -11,7 +11,7 @@ class RagServiceAuth
     {
         $token = $request->bearerToken();
 
-        if ($token !== env('RAG_SERVICE_TOKEN')) {
+        if ($token !== config('rag.token')) {
             return response()->json([
                 'message' => 'Unauthorized'
             ], 401);

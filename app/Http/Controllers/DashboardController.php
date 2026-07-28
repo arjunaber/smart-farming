@@ -16,7 +16,12 @@ class DashboardController extends Controller
     public function index(Request $request)
     {
         $user = Auth::user();
-        $userLahan = $user->petani ? $user->petani->lahan()->with('komoditas')->get() : collect();
+
+        if ($user->role === 'super_admin') {
+            $userLahan = Lahan::with('komoditas')->get();
+        } else {
+            $userLahan = $user->petani ? $user->petani->lahan()->with('komoditas')->get() : collect();
+        }
 
         $selectedLahanId = $request->get('lahan_id');
         $lahan = $selectedLahanId ? $userLahan->find($selectedLahanId) : $userLahan->first();
@@ -37,17 +42,31 @@ class DashboardController extends Controller
             : $this->hitungLuasPolygon($lahan->polygon_coordinates ?? []);
 
 
+        $lahanDevices = $lahan->devices()->where('status', 'active')->get();
+
+        $devicePlacements = $lahanDevices
+            ->filter(fn($d) => $d->placement_lat && $d->placement_lng)
+            ->map(fn($d) => [
+                'id'   => $d->id,
+                'name' => $d->device_name ?? $d->device_uid,
+                'lat'  => $d->placement_lat,
+                'lng'  => $d->placement_lng,
+            ])
+            ->values();
+
         return view('dashboard', array_merge($weatherData, [
-            'lahan'          => $lahan,
-            'userLahan'      => $userLahan,
-            'needsSync'      => $needsSync,
-            'soil_ph'        => $sensorData ? $sensorData->ph       : '--',
-            'soil_moist'     => $sensorData ? $sensorData->humidity  : '--',
-            'last_update'    => $sensorData
+            'lahan'            => $lahan,
+            'userLahan'        => $userLahan,
+            'needsSync'        => $needsSync,
+            'soil_ph'          => $sensorData ? $sensorData->ph       : '--',
+            'soil_moist'       => $sensorData ? $sensorData->humidity  : '--',
+            'last_update'      => $sensorData
                 ? Carbon::parse($sensorData->recorded_at)->format('H:i')
                 : Carbon::now()->format('H:i'),
-            'luas_lahan'     => $luasLahan,
-            'komoditas_nama' => $lahan->komoditas->nama_komoditas ?? 'N/A',
+            'luas_lahan'       => $luasLahan,
+            'komoditas_nama'   => $lahan->komoditas->nama_komoditas ?? 'N/A',
+            'lahanDevices'     => $lahanDevices,
+            'devicePlacements' => $devicePlacements,
         ]));
     }
 
@@ -135,6 +154,37 @@ class DashboardController extends Controller
         }
     }
 
+    public function saveDevicePlacement(Request $request, \App\Models\Lahan $lahan)
+    {
+        $request->validate([
+            'device_id' => 'required|exists:iot_devices,id',
+            'placement_lat' => 'required|numeric',
+            'placement_lng' => 'required|numeric',
+        ]);
+
+        $device = \App\Models\Device::findOrFail($request->device_id);
+
+        if ($device->lahan_id !== $lahan->id) {
+            return response()->json(['status' => 'error', 'message' => 'Device tidak terdaftar di lahan ini.'], 422);
+        }
+
+        $device->update([
+            'placement_lat' => $request->placement_lat,
+            'placement_lng' => $request->placement_lng,
+        ]);
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Posisi device berhasil disimpan.',
+            'data' => [
+                'device_id' => $device->id,
+                'device_name' => $device->device_name,
+                'placement_lat' => $device->placement_lat,
+                'placement_lng' => $device->placement_lng,
+            ]
+        ]);
+    }
+
     private function emptyState(): array
     {
         return [
@@ -149,6 +199,8 @@ class DashboardController extends Controller
             'last_update' => '--',
             'needsSync'   => false,
             'luas_lahan'  => 0,
+            'lahanDevices'     => collect(),
+            'devicePlacements' => collect(),
         ];
     }
 }

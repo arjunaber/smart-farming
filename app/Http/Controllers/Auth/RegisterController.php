@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Models\Petani;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -33,6 +34,13 @@ class RegisterController extends Controller
             'password' => Hash::make($request->password),
             'role' => $request->role ?? 'petani',
         ]);
+
+        if ($user->role === 'petani') {
+            Petani::create([
+                'user_id' => $user->id,
+                'nama_lengkap' => $request->name,
+            ]);
+        }
 
         Auth::login($user);
 
