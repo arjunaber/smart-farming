@@ -204,7 +204,7 @@
                     Laporan
                 </a>
                 @if (Auth::check() && Auth::user()->role === 'super_admin')
-                    <a href="/settings"
+                    {{-- <a href="/settings"
                         class="flex items-center gap-3 px-4 py-3.5 rounded-2xl transition-all font-medium group {{ request()->is('settings') ? 'bg-green-50 dark:bg-green-500/10 text-green-700 dark:text-green-400 font-bold border-r-4 border-green-600' : 'text-slate-500 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-800/50' }}">
                         <svg class="w-5 h-5 {{ request()->is('settings') ? '' : 'group-hover:text-green-600 transition-colors' }}"
                             fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -215,7 +215,7 @@
                                 d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
                         </svg>
                         Pengaturan
-                    </a>
+                    </a> --}}
                 @endif
             </nav>
 
@@ -252,7 +252,7 @@
                     </a>
 
                     @if (auth()->check() && auth()->user()->role === 'super_admin')
-                        <a href="/settings"
+                        {{-- <a href="/settings"
                             class="flex items-center gap-2 px-4 py-3 text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -262,7 +262,7 @@
                                     d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
                             </svg>
                             Pengaturan
-                        </a>
+                        </a> --}}
                     @endif
 
                     <div class="h-px bg-slate-100 dark:bg-slate-700"></div>
