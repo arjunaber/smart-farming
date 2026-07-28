@@ -105,7 +105,7 @@ class LahanController extends Controller
         $validated = $request->validate([
             'nama_lahan'          => 'required|string|max:150',
             'lokasi'              => 'required|string',
-            'luas'                => 'nullable|numeric|min:0', // Validasi Tambahan Kolom Luas
+            'luas'                => 'nullable|numeric|min:0',
             'komoditas_id'        => 'required|exists:master_komoditas,id',
             'polygon_coordinates' => 'nullable|json',
         ]);
@@ -129,12 +129,10 @@ class LahanController extends Controller
         $komoditasList = MasterKomoditas::all();
         $lokasiList = self::$lokasiWilayah;
 
-        // MENYELESAIKAN MASALAH DROPDOWN KOSONG:
-        // Jika data lokasi lama di DB tersimpan sebagai teks (bukan kode), kita cari kodenya secara terbalik
         if (!array_key_exists($lahan->lokasi, $lokasiList)) {
             $kodeDitemukan = array_search($lahan->lokasi, $lokasiList);
             if ($kodeDitemukan !== false) {
-                $lahan->lokasi = $kodeDitemukan; // Set nilainya sementara ke dalam kode wilayah agar dicocokkan Blade
+                $lahan->lokasi = $kodeDitemukan;
             }
         }
 
