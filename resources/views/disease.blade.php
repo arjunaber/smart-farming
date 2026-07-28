@@ -9,6 +9,7 @@
                 hasImage: false,
                 imagePreview: null,
                 isAnalyzing: false,
+                isCheckingBlur: false,
                 showResult: false,
                 selectedFile: null,
                 isDragging: false,
@@ -22,6 +23,10 @@
                     raw_text: '',
                 },
 
+                // Ambang batas ketajaman (Laplacian Variance).
+                // Kernel yang dipakai: 8-neighbor Laplacian (bukan versi 4-neighbor standar),
+                // sehingga skornya jauh lebih besar. Sesuaikan nilai ini jika terlalu ketat/longgar.
+                BLUR_THRESHOLD: 5000,
                 triggerUpload() {
                     document.getElementById('fileUploader').click();
                 },
@@ -34,6 +39,12 @@
                     }
                 },
 
+                handleFileUpload(event) {
+                    const file = event.target.files[0];
+                    if (!file) return;
+                    this.processFile(file);
+                },
+
                 processFile(file) {
                     const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
                     if (!allowedTypes.includes(file.type)) {
@@ -43,6 +54,7 @@
                             text: 'Hanya JPG, PNG, dan WEBP yang diperbolehkan.',
                             confirmButtonColor: '#16a34a',
                         });
+                        document.getElementById('fileUploader').value = '';
                         return;
                     }
                     if (file.size > 5 * 1024 * 1024) {
@@ -52,24 +64,122 @@
                             text: 'Maksimal 5 MB.',
                             confirmButtonColor: '#16a34a',
                         });
+                        document.getElementById('fileUploader').value = '';
                         return;
                     }
 
-                    // Langsung set file tanpa validasi ketajaman/blur
-                    this.setSelectedFile(file);
+                    // Cek ketajaman gambar (deteksi blur) SEBELUM diteruskan ke API.
+                    this.checkBlurAndSet(file);
                 },
 
-                setSelectedFile(file) {
+                checkBlurAndSet(file) {
+                    this.isCheckingBlur = true;
+
+                    const canvas = document.createElement('canvas');
+                    const ctx = canvas.getContext('2d');
+                    const img = new Image();
+                    const objectUrl = URL.createObjectURL(file);
+
+                    img.onload = () => {
+                        // Perkecil resolusi di background agar browser tidak hang
+                        const MAX_DIMENSION = 400;
+                        let scale = 1;
+                        if (img.width > MAX_DIMENSION || img.height > MAX_DIMENSION) {
+                            scale = Math.min(MAX_DIMENSION / img.width, MAX_DIMENSION / img.height);
+                        }
+
+                        canvas.width = img.width * scale;
+                        canvas.height = img.height * scale;
+                        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+                        const laplacianVariance = this.calculateLaplacianVariance(canvas, ctx);
+                        const finalScore = Math.round(laplacianVariance);
+
+                        this.isCheckingBlur = false;
+
+                        if (finalScore < this.BLUR_THRESHOLD) {
+                            Swal.fire({
+                                icon: 'warning',
+                                title: 'Gambar Terlalu Buram!',
+                                html: `Foto tidak fokus atau kurang cahaya. Silakan ambil foto ulang agar AI bisa mendiagnosis dengan akurat.<br><br>
+                                       <span class="text-xs text-slate-500">Skor Ketajaman: <b>${finalScore}</b><br>
+                                       Standar Minimum: <b>${this.BLUR_THRESHOLD}</b></span>`,
+                                confirmButtonColor: '#16a34a',
+                            });
+
+                            URL.revokeObjectURL(objectUrl);
+                            document.getElementById('fileUploader').value = '';
+                            return;
+                        }
+
+                        // Lolos deteksi blur -> lanjutkan set file
+                        this.setSelectedFile(file, objectUrl);
+                    };
+
+                    img.onerror = () => {
+                        this.isCheckingBlur = false;
+                        URL.revokeObjectURL(objectUrl);
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Gagal Membaca Gambar',
+                            text: 'File yang diunggah tidak dapat dibaca. Coba unggah ulang.',
+                            confirmButtonColor: '#ef4444',
+                        });
+                        document.getElementById('fileUploader').value = '';
+                    };
+
+                    img.src = objectUrl;
+                },
+
+                calculateLaplacianVariance(canvas, ctx) {
+                    const width = canvas.width;
+                    const height = canvas.height;
+                    const imageData = ctx.getImageData(0, 0, width, height);
+                    const data = imageData.data;
+
+                    // Ubah gambar ke format Grayscale terlebih dahulu
+                    const grayscale = new Uint8ClampedArray(width * height);
+                    for (let i = 0; i < data.length; i += 4) {
+                        grayscale[i / 4] = 0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2];
+                    }
+
+                    let mean = 0;
+                    let laplacianValues = [];
+
+                    // Kernel Laplacian 8-neighbor untuk mendeteksi tepian
+                    for (let y = 1; y < height - 1; y++) {
+                        for (let x = 1; x < width - 1; x++) {
+                            const idx = y * width + x;
+                            const laplacian =
+                                grayscale[(y - 1) * width + (x - 1)] + grayscale[(y - 1) * width + x] +
+                                grayscale[(y - 1) * width + (x + 1)] +
+                                grayscale[y * width + (x - 1)] + grayscale[y * width + (x + 1)] +
+                                grayscale[(y + 1) * width + (x - 1)] + grayscale[(y + 1) * width + x] +
+                                grayscale[(y + 1) * width + (x + 1)] -
+                                (8 * grayscale[idx]);
+
+                            laplacianValues.push(laplacian);
+                            mean += laplacian;
+                        }
+                    }
+
+                    if (laplacianValues.length === 0) return 0;
+                    mean /= laplacianValues.length;
+
+                    // Hitung nilai Variance dari hasil filter Laplacian
+                    let variance = 0;
+                    for (let i = 0; i < laplacianValues.length; i++) {
+                        variance += Math.pow(laplacianValues[i] - mean, 2);
+                    }
+
+                    return variance / laplacianValues.length;
+                },
+
+                setSelectedFile(file, objectUrl = null) {
                     this.hasImage = true;
                     this.showResult = false;
-                    this.imagePreview = URL.createObjectURL(file);
+                    this.imagePreview = objectUrl || URL.createObjectURL(file);
                     this.selectedFile = file;
-                },
-
-                handleFileUpload(event) {
-                    const file = event.target.files[0];
-                    if (!file) return;
-                    this.processFile(file);
                 },
 
                 async analyzeImage() {
@@ -150,9 +260,25 @@
 
     <div x-data="disease" class="max-w-5xl mx-auto space-y-6">
         <div class="mb-8">
-            <h1 class="text-2xl font-black text-slate-800 dark:text-white">Klasifikasi Penyakit</h1>
-            <p class="text-slate-500 dark:text-slate-400 text-sm mt-1">Unggah foto daun tanaman yang terkena penyakit untuk
-                diagnosis Vision AI.</p>
+            <div
+                class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 text-xs font-semibold mb-3">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M9.75 17L5 12.25l1.41-1.41L9.75 14.17l7.84-7.84L19 7.75 9.75 17z" />
+                </svg>
+                Vision AI Plant Disease Detection
+            </div>
+
+            <h1 class="text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white">
+                Klasifikasi Penyakit Tanaman
+            </h1>
+
+            <p class="mt-3 max-w-2xl text-sm leading-6 text-slate-600 dark:text-slate-400">
+                Unggah foto daun tanaman yang <span class="font-semibold text-green-600">jelas dan fokus</span>,
+                kemudian sistem akan menganalisis citra menggunakan
+                <span class="font-semibold">Vision AI</span> untuk mengidentifikasi penyakit,
+                tingkat keyakinan, penyebab, serta rekomendasi penanganan secara otomatis.
+            </p>
         </div>
 
         <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-2xl p-6 mb-6">
@@ -207,15 +333,31 @@
                     }"
                     @click="triggerUpload()" @dragover.prevent="isDragging = true" @dragleave.prevent="isDragging = false"
                     @drop.prevent="handleDrop($event)">
-                    <div class="bg-white p-4 rounded-2xl shadow-sm mb-4 group-hover:scale-110 transition-transform">
-                        <svg class="w-8 h-8 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z">
-                            </path>
-                        </svg>
-                    </div>
-                    <p class="font-bold text-slate-700 dark:text-slate-300">Klik atau seret foto ke sini</p>
-                    <p class="text-xs text-slate-400 mt-1">JPG, PNG, WEBP – maks 5 MB</p>
+                    <template x-if="!isCheckingBlur">
+                        <div>
+                            <div class="bg-white p-4 rounded-2xl shadow-sm mb-4 group-hover:scale-110 transition-transform">
+                                <svg class="w-8 h-8 text-green-500" fill="none" stroke="currentColor"
+                                    viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z">
+                                    </path>
+                                </svg>
+                            </div>
+                            <p class="font-bold text-slate-700 dark:text-slate-300">Klik atau seret foto ke sini</p>
+                            <p class="text-xs text-slate-400 mt-1">JPG, PNG, WEBP – maks 5 MB</p>
+                        </div>
+                    </template>
+                    <template x-if="isCheckingBlur">
+                        <div>
+                            <svg class="animate-spin w-8 h-8 text-green-500 mx-auto mb-3" fill="none"
+                                viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
+                                    stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+                            </svg>
+                            <p class="font-bold text-slate-700 dark:text-slate-300">Memeriksa ketajaman gambar...</p>
+                        </div>
+                    </template>
                 </div>
 
                 {{-- Preview + Tombol --}}
@@ -245,7 +387,8 @@
                     </button>
                 </div>
 
-                <input type="file" id="fileUploader" @change="handleFileUpload($event)" class="hidden" accept="image/*">
+                <input type="file" id="fileUploader" @change="handleFileUpload($event)" class="hidden"
+                    accept="image/*">
             </div>
 
             {{-- ===== KOLOM KANAN: Hasil ===== --}}
@@ -255,7 +398,8 @@
                 {{-- Status Kosong --}}
                 <div x-show="!showResult && !isAnalyzing"
                     class="flex-1 flex flex-col items-center justify-center text-center">
-                    <div class="w-16 h-16 bg-slate-100 dark:bg-slate-800 rounded-2xl flex items-center justify-center mb-4">
+                    <div
+                        class="w-16 h-16 bg-slate-100 dark:bg-slate-800 rounded-2xl flex items-center justify-center mb-4">
                         <svg class="w-8 h-8 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
